@@ -1,252 +1,157 @@
-/* --- Global Theme & Reset --- */
+/* ==========================================================================
+   Global Styles (Apple-clean, square, frosted)
+   Drop-in replacement for: src/styles.css
+   ========================================================================== */
+
+/* ---------- 1) Modern reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+html, body { margin: 0; padding: 0; }
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus { outline: none; }
+
+/* ---------- 2) Theme tokens ---------- */
 :root {
-  --bg-dark: #0B0D12;
-  --panel-bg: #11131A;
-  --glass-bg: rgba(22, 25, 38, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f0f2f5;
-  --text-secondary: #a8b0c3;
-  --accent-primary: #ff4bd0;
-  --accent-glow: rgba(255, 75, 208, 0.3);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* surfaces */
+  --bg: #0B0D12;                 /* deep space background */
+  --panel: #10141c;              /* elevated surfaces */
+  --glass: rgba(16,18,24,.58);   /* frosted base */
+  --glass-strong: rgba(16,18,24,.72);
+
+  /* ink */
+  --ink-1: #F2F4F8;              /* primary text */
+  --ink-2: #A0A9B8;              /* secondary text */
+
+  /* strokes (hairline borders) */
+  --stroke-1: rgba(255,255,255,.06);
+  --stroke-2: rgba(255,255,255,.12);
+
+  /* accent (iOS blue) */
+  --accent: #0A84FF;
+
+  /* sizing */
+  --bar-h: 56px;                 /* mobile top/bottom bar height */
+  --bar-h-desktop: 64px;
+
+  /* typography */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+             "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, system-ui, sans-serif;
+}
+
+/* ---------- 3) App background & typography ---------- */
+html, body {
+  background-color: var(--bg);
+  color: var(--ink-1);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
+/* Keep vertical rhythm tight & crisp like iOS */
+body { line-height: 1.35; }
+
+/* ---------- 4) Global “square” look: no rounding anywhere ---------- */
+button, input, textarea, select,
+.card, .panel, .post, .chip, .pill {
+  border-radius: 0 !important;
 }
 
-body {
-  margin: 0;
-  background-color: var(--bg-dark);
-  color: var(--text-primary);
-  overflow: hidden; /* Prevent body scroll */
+/* ---------- 5) Frosted utilities (use on headers/nav/panels) ---------- */
+.frost {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-top: 1px solid var(--stroke-1);
+  border-bottom: 1px solid var(--stroke-1);
+}
+.frost-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  border-top: 1px solid var(--stroke-1);
+  border-bottom: 1px solid var(--stroke-1);
 }
 
-/* --- Core App Layout --- */
-.app-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+/* ---------- 6) Hairline separators ---------- */
+.hr,
+.separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--stroke-2), transparent);
+  border: 0;
 }
 
-.background-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none; /* Allows clicks to pass through to UI */
+/* ---------- 7) Icon buttons (square, minimal) ---------- */
+.icon-btn {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 0; background: transparent; color: #E6E8EE;
+  cursor: pointer; padding: 0; margin: 0;
+}
+.icon-btn .ico { width: 22px; height: 22px; }
+.icon-btn:active { opacity: .85; }
+
+/* ---------- 8) Text buttons & inputs (square, hairline) ---------- */
+.btn, button.btn {
+  height: 40px; padding: 0 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--stroke-2);
+  color: var(--ink-1);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.input, input[type="text"], input[type="search"], textarea {
+  height: 40px; padding: 0 10px; background: rgba(255,255,255,.06);
+  border: 1px solid var(--stroke-2); color: var(--ink-1);
 }
 
-.main-layout {
-  display: flex;
-  position: relative;
-  z-index: 1;
-  height: 100vh;
+/* ---------- 9) Focus ring (iOS-like) ---------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-/* --- Responsive Sidebar (Shell) --- */
-.sidebar {
-  width: 280px;
-  height: 100%;
-  background-color: var(--panel-bg);
-  border-right: 1px solid var(--glass-border);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  transition: width 0.3s ease;
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.sidebar-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff, var(--accent-primary));
-  padding: 3px;
-  position: relative;
-}
-
-.sidebar-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid var(--panel-bg);
-}
-
-.sidebar-user-info .name {
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.sidebar-user-info .handle {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.sidebar-nav-title {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
-  padding: 0 12px;
-}
-
-.sidebar-nav-button {
-  width: 100%;
-  text-align: left;
-  padding: 12px;
-  margin-bottom: 4px;
-  border-radius: 8px;
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sidebar-nav-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Sidebar Responsive Breakpoints */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 80px; /* Collapse to icon-only */
-    padding: 24px 16px;
-    align-items: center;
-  }
-  .sidebar-user-info, .sidebar-nav-title, .sidebar-nav-button .button-text {
-    display: none; /* Hide text */
-  }
-  .sidebar-header {
-    margin-bottom: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    display: none; /* Hide completely on mobile */
-  }
-}
-
-/* --- Main Content (Feed) --- */
-.feed-scroll-container {
-  flex: 1;
-  height: 100vh;
+/* ---------- 10) Page chrome helpers ---------- */
+/* Use these if your app content needs to live between top/bottom bars */
+.content-viewport {
+  height: 100dvh;
+  padding-top: var(--bar-h);
+  padding-bottom: var(--bar-h);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-
-.feed-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px;
-  max-width: 500px; /* Controls the feed width */
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .feed-content {
-    padding: 16px;
-    max-width: 100%;
+@media (min-width: 1024px) {
+  .content-viewport {
+    padding-top: var(--bar-h-desktop);
+    padding-bottom: 0;          /* bottom bar typically hidden on desktop */
   }
 }
 
-
-/* --- Post Card --- */
-.post-card {
-  width: 100%;
-  background-color: var(--panel-bg);
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+/* ---------- 11) Cards / panels (square, subtle) ---------- */
+.card, .panel, .surface {
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--stroke-2);
+  box-shadow: none;
 }
 
-.post-media {
-  width: 100%;
-  aspect-ratio: 9 / 12; /* Vertical aspect ratio */
-  background: linear-gradient(135deg, #1f222e, #3a3f51);
-}
+/* ---------- 12) Links & subtle states ---------- */
+a:hover { opacity: .92; }
+.muted { color: var(--ink-2); }
 
-.post-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* ---------- 13) Scrollbar (thin, unobtrusive) ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-track { background: transparent; }
 
-.post-frosted-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-}
+/* ---------- 14) Media fit helpers ---------- */
+.media-cover { width: 100%; height: 100%; object-fit: cover; }
+.media-contain { width: 100%; height: 100%; object-fit: contain; }
 
-.post-frosted-bar.top {
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.post-frosted-bar.bottom {
-  justify-content: space-around;
-  border-top: 1px solid var(--glass-border);
-}
-
-.post-author-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff, var(--accent-primary));
-}
-
-.post-author-info .name {
-  font-weight: 600;
-}
-
-.post-author-info .handle {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.post-action-button {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.post-action-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.post-action-button.primary {
-  color: var(--accent-primary);
-  font-weight: 700;
+/* ---------- 15) Visually hidden (for a11y) ---------- */
+.visually-hidden {
+  position: absolute !important; clip: rect(1px,1px,1px,1px);
+  padding: 0 !important; border: 0 !important; height: 1px !important; width: 1px !important; overflow: hidden;
 }
