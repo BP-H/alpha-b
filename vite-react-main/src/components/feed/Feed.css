@@ -1,4 +1,12 @@
-/* isolation file if you want extra feed-only rules; most styles are in styles.css */
-
-/* increase default spacing between images if you want more */
+/* Feed-only overrides (kept tiny). If you want more space between images,
+   bump --img-gap to 18–24px. */
 :root { --img-gap: 16px; }
+
+/* Redundant safety in case styles.css is changed later */
+.post-media { display: grid; gap: var(--img-gap); }
+.post-media.one { grid-template-columns: 1fr; }
+.post-media.two { grid-template-columns: 1fr 1fr; }
+
+@media (min-width: 1024px) {
+  :root { --img-gap: 12px; } /* a touch tighter on desktop */
+}
