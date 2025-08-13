@@ -18,7 +18,7 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
 
   return (
     <article className="post" aria-label={post.title ?? post.author}>
-      {/* Frost TOP */}
+      {/* Frost TOP (flush) */}
       <div className="frost frost-top">
         <button
           className="avatar-circle"
@@ -33,27 +33,28 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
         {post.title && <span className="chip">{post.title}</span>}
       </div>
 
-      {/* Media block — background shows even if external image is slow */}
-      <div className="post-media" style={{ backgroundImage: imgUrl ? `url(${imgUrl})` : undefined }}>
-        {/* keep an <img> for a11y / long-press saving etc. */}
+      {/* Media (real height; bg + hidden img) */}
+      <div
+        className="post-media"
+        style={{ backgroundImage: imgUrl ? `url(${imgUrl})` : undefined }}
+      >
         {imgUrl && <img src={imgUrl} alt={imgAlt} loading="lazy" decoding="async" />}
       </div>
 
-      {/* Frost BOTTOM */}
+      {/* Frost BOTTOM — 5 equal cells: avatar + 4 evenly spaced icons */}
       <div className="frost frost-bottom">
         <button
           className="me-circle"
           aria-label="Me"
           style={{ backgroundImage: `url(${me.avatar})` }}
         />
-        <div className="actions">
-          <button className="icon-btn" aria-label="Like"><IconHeart /></button>
-          <button className="icon-btn" aria-label="Comment" onClick={() => setOpen(v => !v)}><IconChat /></button>
-          <button className="icon-btn" aria-label="Remix"><IconRemix /></button>
-          <button className="icon-btn" aria-label="Enter Universe" onClick={() => onEnterWorld?.()}><IconPortal /></button>
-        </div>
+        <button className="icon-btn" aria-label="Like"><IconHeart /></button>
+        <button className="icon-btn" aria-label="Comment" onClick={() => setOpen(v => !v)}><IconChat /></button>
+        <button className="icon-btn" aria-label="Remix"><IconRemix /></button>
+        <button className="icon-btn" aria-label="Enter Universe" onClick={() => onEnterWorld?.()}><IconPortal /></button>
       </div>
 
+      {/* Optional drawer */}
       <div className={`drawer ${open ? "open" : ""}`}>engagement drawer…</div>
     </article>
   );
