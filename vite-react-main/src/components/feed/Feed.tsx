@@ -2,7 +2,12 @@ import { Post, User } from "../../types";
 import PostCard from "../PostCard";
 import "./Feed.css";
 
-type Props = { posts: Post[]; me: User; onOpenProfile?: (id: string) => void; onEnterWorld: () => void };
+type Props = {
+  posts: Post[];
+  me: User;
+  onOpenProfile?: (id: string) => void;
+  onEnterWorld: () => void;
+};
 
 export default function Feed({ posts, me, onOpenProfile, onEnterWorld }: Props) {
   return (
