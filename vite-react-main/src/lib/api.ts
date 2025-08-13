@@ -18,10 +18,24 @@ export async function quickChat(apiKey: string) {
 }
 
 export async function assistantReply(q: string, apiKey?: string) {
-  const r = await fetch("/api/assistant-reply", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(apiKey ? { q, apiKey } : { q }),
-  });
-  return r.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
+  try {
+    const r = await fetch("/api/assistant-reply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(apiKey ? { q, apiKey } : { q }),
+      signal: controller.signal,
+    });
+    if (!r.ok) {
+      const error = await r.text();
+      return { ok: false, error };
+    }
+    const { text } = await r.json();
+    return { ok: true, text };
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? String(e) };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
