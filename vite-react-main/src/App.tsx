@@ -1,15 +1,11 @@
 import { useState } from "react";
-import Feed from "./components/Feed";
-import Modal from "./components/Modal";
-import PortalOrb from "./components/PortalOrb";
+import Feed from "./components/feed/Feed";
+import AssistantOrb from "./components/AssistantOrb";
 import { Post, User } from "./types";
 import { avatar, photo } from "./lib/placeholders";
+import Modal from "./components/Modal";
 
-const me: User = {
-  id: "me",
-  name: "You",
-  avatar: avatar("You"),
-};
+const me: User = { id: "me", name: "You", avatar: avatar("You") };
 
 const seedPosts: Post[] = [
   {
@@ -37,9 +33,7 @@ const seedPosts: Post[] = [
 
 export default function App() {
   const [posts] = useState<Post[]>(seedPosts);
-  const [modal, setModal] = useState<{ open: boolean; img?: string }>({
-    open: false,
-  });
+  const [modal, setModal] = useState<{ open: boolean; img?: string }>({ open: false });
 
   function handleAnalyzeImage(imgUrl: string) {
     setModal({ open: true, img: imgUrl });
@@ -47,20 +41,13 @@ export default function App() {
 
   return (
     <>
-      <Feed posts={posts} me={me} onOpenProfile={(id) => console.log(id)} />
-
-      <PortalOrb onAnalyzeImage={handleAnalyzeImage} />
-
-      <Modal
-        open={modal.open}
-        onClose={() => setModal({ open: false })}
-        title="Assistant"
-      >
+      <Feed posts={posts} me={me} onOpenProfile={(id) => console.log("profile:", id)} />
+      <AssistantOrb onAnalyzeImage={handleAnalyzeImage} />
+      <Modal open={modal.open} onClose={() => setModal({ open: false })} title="Assistant">
         <div style={{ display: "grid", gap: 12 }}>
           <div className="chip">Demo</div>
           <p style={{ margin: 0, color: "var(--ink-2)" }}>
-            This is where your AI call would run (OpenAI, etc.). I received the
-            image under the orb and would return insights/description/tags.
+            This is where your AI call would run and return insights about the image you dropped the orb on.
           </p>
           {modal.img && (
             <div style={{ border: "1px solid var(--stroke-2)" }}>
