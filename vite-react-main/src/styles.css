@@ -12,9 +12,9 @@ button,input,textarea,select{font:inherit;color:inherit}
   --stroke-1:rgba(255,255,255,.06); --stroke-2:rgba(255,255,255,.12);
   --glass:rgba(14,16,22,.36);
   --glass-strong:rgba(14,16,22,.46);
-  --post-gap:6px;                 /* gap BETWEEN posts only */
+  --post-gap:2px;                 /* gap BETWEEN posts only */
   --feed-max:100%;
-  --stripe-h:70px;                  /* same height for top & bottom frost */
+  --stripe-h:64px;                  /* same height for top & bottom frost */
   --orb-size:64px;
 }
 
