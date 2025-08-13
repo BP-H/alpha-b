@@ -14,7 +14,6 @@ const SEED = [
 ];
 
 export default function Shell() {
-  // simple demo avatars
   const avatar = (i: number) => `https://i.pravatar.cc/100?img=${(i % 70) + 1}`;
   const me: User = { id: "me", name: "You", avatar: avatar(99) };
 
@@ -32,21 +31,20 @@ export default function Shell() {
   );
 
   const onEnterWorld = () => {
-    // hook your transition here
     console.log("Enter Universe");
   };
 
   return (
     <>
-      {/* World in the back (must pass required props) */}
+      {/* 3D background */}
       <div className="world-layer">
         <World3D selected={null} onBack={() => {}} />
       </div>
 
-      {/* Brand badge */}
+      {/* Top-left brand */}
       <BrandBadge onEnterUniverse={onEnterWorld} />
 
-      {/* Feed (single column of images) */}
+      {/* Feed */}
       <main className="content-viewport feed-wrap">
         <div className="feed-content">
           {posts.map((p: Post) => (
@@ -61,7 +59,7 @@ export default function Shell() {
         </div>
       </main>
 
-      {/* Draggable assistant orb (bottom-right) */}
+      {/* Floating orb (bottom-right) */}
       <AssistantOrb />
     </>
   );
