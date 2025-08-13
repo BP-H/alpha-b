@@ -1,21 +1,10 @@
-export type ImageAsset = {
-  id: string;
-  url: string;
-  alt?: string;
-};
-
+export type ImageAsset = { id: string; url: string; alt?: string };
 export type Post = {
   id: string;
   author: string;
-  authorAvatar: string; // avatar for the poster (top-left of card)
+  authorAvatar: string; // circular in top stripe
   title?: string;
-  subtitle?: string;
   time: string;
-  images: ImageAsset[]; // use images[], not image
+  images: ImageAsset[];  // we render first image for now
 };
-
-export type User = {
-  id: string;
-  name: string;
-  avatar: string;
-};
+export type User = { id: string; name: string; avatar: string }; // square in bottom stripe
