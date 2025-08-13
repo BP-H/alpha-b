@@ -1,57 +1,74 @@
 // src/App.tsx
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import "./styles.css";
 import Shell from "./components/Shell";
-import ChatDock from "./components/ChatDock";
+import AssistantOrb from "./components/AssistantOrb";
+import Feed from "./components/feed/Feed";
 import { Post } from "./types";
-import bus from "./lib/bus";
+import ChatDock from "./components/ChatDock";
 
+// Lazy-loaded 3D components for performance
 const BackgroundVoid = lazy(() => import("./three/BackgroundVoid"));
 const World3D = lazy(() => import("./components/World3D"));
 
+/**
+ * The main application component. It orchestrates the entire UI,
+ * managing the state between the 2D feed and the 3D world view.
+ */
 export default function App() {
+  // State to toggle between the 'feed' and the immersive 'world' view
   const [mode, setMode] = useState<"feed" | "world">("feed");
-  const [selected, setSelected] = useState<Post | null>(null);
-  const [burst, setBurst] = useState<{ on: boolean; x: number; y: number }>({ on: false, x: 0, y: 0 });
+  // State to hold the data of the post that the user wants to enter
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  const enterWorld = useCallback((p: Post, at?: { x: number; y: number }) => {
-    setSelected(p);
-    setBurst({ on: true, x: at?.x ?? window.innerWidth / 2, y: at?.y ?? window.innerHeight / 2 });
-    window.setTimeout(() => {
-      setMode("world");
-      setBurst((b) => ({ ...b, on: false }));
-    }, 650);
+  /**
+   * Callback function to transition from the feed to the 3D world.
+   * This will be passed down to the Feed component.
+   */
+  const enterWorld = useCallback((post: Post) => {
+    console.log("Entering world for post:", post.title);
+    setSelectedPost(post);
+    // Here you could add a transition animation before changing the mode
+    setMode("world");
   }, []);
 
-  const leaveWorld = useCallback(() => setMode("feed"), []);
-  useEffect(() => bus.on("ui:leave", () => setMode("feed")), []);
-
-  const overlayStyle = useMemo(
-    () => ({ "--px": `${burst.x}px`, "--py": `${burst.y}px` }) as React.CSSProperties,
-    [burst.x, burst.y]
-  );
+  /**
+   * Callback function to transition from the 3D world back to the feed.
+   */
+  const leaveWorld = useCallback(() => {
+    console.log("Leaving world and returning to feed.");
+    setSelectedPost(null);
+    setMode("feed");
+  }, []);
 
   return (
-    <div style={{ position: "relative" }}>
-      <Suspense fallback={<div style={{ height: "30vh" }} />}>
-        <BackgroundVoid />
+    <div className="app-container">
+      {/* Layer 1: The 3D background, which is always rendered */}
+      <Suspense fallback={null}>
+        <div className="background-canvas">
+          <BackgroundVoid />
+        </div>
       </Suspense>
 
-      <div className="apple-white-bg" style={{ position: "relative", zIndex: 1 }}>
+      {/* Layer 2: The main content, which is either the Feed or the 3D World */}
+      <div className="main-content-layer">
         {mode === "feed" ? (
-          <Shell onPortal={enterWorld} hideOrb={false} />
+          <Feed onPortal={enterWorld} />
         ) : (
-          <Suspense fallback={<main className="content" style={{ padding: 24 }}>Loading…</main>}>
-            <main className="content" style={{ padding: 0 }}>
-              <World3D selected={selected} onBack={leaveWorld} />
-            </main>
+          <Suspense fallback={<div className="loading-placeholder">Loading World...</div>}>
+            <World3D selected={selectedPost} onBack={leaveWorld} />
           </Suspense>
         )}
       </div>
 
-      <ChatDock />
-
-      <div className={`portal-overlay ${burst.on ? "on" : ""}`} style={overlayStyle} aria-hidden />
+      {/* Layer 3: Floating UI elements that render on top of everything */}
+      {mode === "feed" && (
+        <>
+          <Shell />
+          <AssistantOrb />
+          <ChatDock />
+        </>
+      )}
     </div>
   );
 }
