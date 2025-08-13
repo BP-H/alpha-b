@@ -2,13 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Float, Instances, Instance, OrbitControls } from "@react-three/drei";
-import {
-  XR,
-  createXRStore,
-  useXR,
-  useXRStore,
-  useXRControllerLocomotion,
-} from "@react-three/xr";
+import { XR, createXRStore, useXRStore, useXRControllerLocomotion } from "@react-three/xr";
 import * as THREE from "three";
 import type { Post } from "../types";
 import bus from "../lib/bus";
@@ -57,9 +51,7 @@ function DemandBridge({ deps }: { deps: any[] }) {
   useEffect(() => {
     const off = bus.on?.("world:update", () => invalidate());
     return () => {
-      try {
-        off?.();
-      } catch {}
+      try { off?.(); } catch {}
     };
   }, [invalidate]);
 
@@ -78,10 +70,10 @@ function VRLocomotion() {
   return null;
 }
 
-/** Hide OrbitControls while XR is presenting (avoid input conflicts) */
+/** Hide OrbitControls while XR session is active */
 function OrbitWhenNotXR() {
-  const { isPresenting } = useXR();
-  return isPresenting ? null : <OrbitControls enablePan={false} />;
+  const session = useXRStore((s) => s.session);
+  return session ? null : <OrbitControls enablePan={false} />;
 }
 
 export default function World3D({
@@ -99,15 +91,16 @@ export default function World3D({
       setW((s) => clampWorld({ ...s, ...p }))
     );
     return () => {
-      try {
-        off?.();
-      } catch {}
+      try { off?.(); } catch {}
     };
   }, []);
 
   // Shared XR store
   const xrStore = useMemo(() => createXRStore(), []);
-  const startSession = (mode: XRSessionMode) => xrStore.enterXR(mode);
+  const startSession = (mode: XRSessionMode) => {
+    // silent fail if unsupported
+    xrStore.enterXR(mode).catch(() => {});
+  };
 
   // Theme / fog palette
   const bg = w.theme === "dark" ? "#0b0d12" : "#f6f8fb";
@@ -129,15 +122,7 @@ export default function World3D({
       >
         <XR store={xrStore}>
           {/* Trigger a single frame whenever these change */}
-          <DemandBridge
-            deps={[
-              w.theme,
-              w.fogLevel,
-              w.gridOpacity,
-              w.orbColor,
-              positions.length,
-            ]}
-          />
+          <DemandBridge deps={[w.theme, w.fogLevel, w.gridOpacity, w.orbColor, positions.length]} />
 
           <VRLocomotion />
           <color attach="background" args={[bg]} />
@@ -175,12 +160,8 @@ export default function World3D({
 
       {/* Bottom-only glass bar */}
       <div className="world-bottombar">
-        <button className="pill" onClick={onBack}>
-          Back to Feed
-        </button>
-        <button className="pill" onClick={() => startSession("immersive-vr")}>
-          Enter VR
-        </button>
+        <button className="pill" onClick={onBack}>Back to Feed</button>
+        <button className="pill" onClick={() => startSession("immersive-vr")}>Enter VR</button>
         {selected && <span className="crumb">Portal • {selected.title}</span>}
       </div>
     </div>
