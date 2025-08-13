@@ -201,4 +201,22 @@ export default function AssistantOrb({ onAnalyzeImage }: Props) {
           background:
             radial-gradient(60% 60% at 40% 35%, rgba(255,255,255,.9), rgba(255,255,255,.2) 65%, transparent 70%),
             radial-gradient(80% 80% at 70% 70%, rgba(10,132,255,.8), rgba(10,132,255,.2) 70%, transparent 72%),
-            radia
+            radial-gradient(120% 120% at 50% 50%, rgba(10,132,255,.2), transparent 60%);
+          border:1px solid rgba(255,255,255,.12);
+          box-shadow:0 0 0 1px rgba(255,255,255,.06) inset, 0 8px 40px rgba(10,132,255,.35);
+        }
+        .portal-orb.open .orb-core{animation:pulse 1.6s ease infinite}
+        @keyframes pulse{0%{box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 8px 40px rgba(10,132,255,.35)}50%{box-shadow:0 0 0 1px rgba(255,255,255,.1) inset,0 8px 60px rgba(10,132,255,.55)}100%{box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 8px 40px rgba(10,132,255,.35)}}
+        .portal-orb.grow .orb-core{transform:scale(1.08)}
+        .portal-orb.vortex .orb-core{background:conic-gradient(from 0deg, rgba(10,132,255,.8), rgba(155,134,255,.8), rgba(110,168,254,.8), rgba(10,132,255,.8)); animation:spin .9s ease forwards}
+        @keyframes spin{to{filter:hue-rotate(90deg) saturate(1.3)}}
+        .radial-menu{position:absolute;inset:-30px;display:grid;place-items:center;pointer-events:none}
+        .rm-item{position:absolute;pointer-events:auto;display:grid;place-items:center;gap:6px;padding:6px 8px;background:rgba(16,18,24,.9);border:1px solid rgba(255,255,255,.12);color:#fff}
+        .rm-item:nth-child(1){transform:translate(-94px,0)} .rm-item:nth-child(2){transform:translate(94px,0)} .rm-item:nth-child(3){transform:translate(0,94px)}
+        .rm-item .ico{width:18px;height:18px}
+        .analyze-overlay{transition:background .2s ease}
+        .analyzing .orb-core{box-shadow:0 0 0 1px rgba(255,255,255,.08) inset, 0 10px 70px rgba(10,132,255,.7)}
+      `}</style>
+    </>
+  );
+}
