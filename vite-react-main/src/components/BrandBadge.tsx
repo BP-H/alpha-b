@@ -9,13 +9,13 @@ export default function BrandBadge({ onEnterUniverse }: { onEnterUniverse: () =>
       <div className="brand-wrap">
         <button
           className="brand-dot"
-          aria-label="superNova2177"
+          aria-label="Toggle brand menu"
           onClick={() => setOpen(o => !o)}
           onDoubleClick={() => bus.emit("sidebar:toggle", undefined)} /* bus.emit expects (event, payload) */
         >
           <img
             src="/supernova.png"
-            alt=""
+            alt="Supernova 2177 logo"
             onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display='none'; }}
           />
         </button>

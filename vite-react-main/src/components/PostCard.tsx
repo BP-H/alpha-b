@@ -23,7 +23,7 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
         <button
           className="avatar-circle"
           style={{ backgroundImage: `url(${post.authorAvatar})` }}
-          aria-label={`${post.author} profile`}
+          aria-label={`Open ${post.author}'s profile`}
           onClick={() => onOpenProfile?.(post.id)}
         />
         <div className="author">
@@ -45,7 +45,7 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
       <div className="frost frost-bottom">
         <button
           className="me-circle"
-          aria-label="Me"
+          aria-label="Open your profile"
           style={{ backgroundImage: `url(${me.avatar})` }}
         />
         <button className="icon-btn" aria-label="Like"><IconHeart /></button>
