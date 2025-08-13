@@ -1,174 +1,86 @@
-import { useState } from "react";
-import { Post } from "../../types";
+import { Post, User } from "../../types";
 
-// Fallbacks
-const FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop";
-const AVATAR_SVG =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
-      <defs>
-        <radialGradient id='g' cx='30%' cy='30%' r='80%'>
-          <stop offset='0%' stop-color='#ffffff'/>
-          <stop offset='60%' stop-color='#ffc6ee'/>
-          <stop offset='100%' stop-color='#ff74de'/>
-        </radialGradient>
-      </defs>
-      <rect width='80' height='80' rx='40' fill='#0f1117'/>
-      <circle cx='40' cy='40' r='26' fill='url(#g)'/>
-    </svg>`
-  );
-
-export default function PostCard({
-  post,
-  onPortal,
-}: {
+type Props = {
   post: Post;
-  onPortal?: (p: Post, at?: { x: number; y: number }) => void;
-}) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  me: User;
+  onOpenProfile?: (userId: string) => void;
+};
 
-  // read optional fields without changing Post type
-  const pAny = post as any;
-  const author = post.author || "@proto_ai";
-  const title = post.title || "Untitled";
-  const image = post.image || FALLBACK_IMG;
-  const space = pAny.space || "superNova_2177";
-  const avatar = pAny.avatar || AVATAR_SVG;
-  const when = "now";
+export default function PostCard({ post, me, onOpenProfile }: Props) {
+  const grid = post.images.length >= 2 ? "post-media two" : "post-media one";
 
   return (
-    <article className={`pc ${drawerOpen ? "dopen" : ""}`} aria-label={`Post by ${author}`}>
-      {/* media */}
-      <div className="pc-media">
-        <img
-          src={image}
-          alt={title}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = FALLBACK_IMG;
-          }}
+    <article className="post">
+      {/* Header: author avatar + meta */}
+      <div className="post-head">
+        <div
+          className="avatar"
+          style={{ backgroundImage: `url(${post.authorAvatar})` }}
         />
-
-        {/* top frosted bar */}
-        <div className="pc-topbar">
-          <button
-            className="pc-ava"
-            onClick={() => setDrawerOpen((v) => !v)}
-            aria-label="Profile actions"
-          >
-            <img src={avatar} alt="" />
-          </button>
-          <div className="pc-meta">
-            <div className="pc-handle">{author}</div>
-            <div className="pc-sub">
-              {when} • {space}
-            </div>
-          </div>
-          <div className="pc-title">{title}</div>
+        <div style={{ minWidth: 0 }}>
+          <div className="post-author">{post.author}</div>
+          <div className="post-sub">{post.time}</div>
         </div>
-
-        {/* bottom frosted bar with 5 actions (first = profile) */}
-        <div className="pc-botbar">
-          <div className="pc-actions">
-            <button
-              className="pc-act profile"
-              onClick={() => setDrawerOpen((v) => !v)}
-              aria-label="Profile menu"
-              title="Profile menu"
-            >
-              <span className="ico avatar" />
-            </button>
-            <button
-              className="pc-act"
-              onClick={() => setDrawerOpen((v) => !v)}
-              aria-label="Engage"
-              title="Engage"
-            >
-              <span className="ico heart" />
-            </button>
-            <button
-              className="pc-act"
-              onClick={() => setDrawerOpen((v) => !v)}
-              aria-label="Comment"
-              title="Comment"
-            >
-              <span className="ico comment" />
-            </button>
-            <button
-              className="pc-act"
-              onClick={() => setDrawerOpen((v) => !v)}
-              aria-label="Share / Remix"
-              title="Share / Remix"
-            >
-              <span className="ico share" />
-            </button>
-            <button
-              className="pc-act"
-              onClick={(e) => {
-                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                onPortal?.(post, { x: r.left + r.width / 2, y: r.top });
-              }}
-              aria-label="Enter world"
-              title="Enter world"
-            >
-              <span className="ico world" />
-            </button>
+        {post.title && (
+          <div className="chip" style={{ marginLeft: "auto" }}>
+            {post.title}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* expanding drawer (comments / emojis / remix etc.) */}
-      <div className="pc-drawer">
-        <div style={{ padding: 12, display: "grid", gap: 10 }}>
-          <input
-            placeholder="Write a comment…"
-            style={{
-              height: 40,
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,.14)",
-              background: "rgba(20,22,32,.65)",
-              color: "#fff",
-              padding: "0 12px",
-              outline: "none",
-            }}
-          />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {[
-              "🤗",
-              "🔥",
-              "💜",
-              "✨",
-              "🚀",
-              "🌌",
-              "🧠",
-              "💡",
-              "🎯",
-              "❤️‍🔥",
-              "🎉",
-              "👏",
-              "😎",
-              "🫶",
-              "💬",
-              "🔁",
-            ].map((e, i) => (
-              <button
-                key={i}
-                style={{
-                  height: 34,
-                  padding: "0 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,.14)",
-                  background: "rgba(17,20,35,.6)",
-                  color: "#fff",
-                  cursor: "pointer",
-                }}
-              >
-                {e}
-              </button>
-            ))}
+      {/* Media: uses images[] (not image) */}
+      <div className={grid} style={{ gap: "var(--img-gap, 14px)", padding: 0 }}>
+        {post.images.map((img) => (
+          <div key={img.id} data-asset={img.url}>
+            <img src={img.url} alt={img.alt ?? ""} />
           </div>
+        ))}
+      </div>
+
+      {/* Footer: your avatar + clean icons */}
+      <div className="post-foot">
+        <button
+          className="icon-btn"
+          onClick={() => onOpenProfile?.(me.id)}
+          title="Me"
+        >
+          <div
+            className="avatar me"
+            style={{ backgroundImage: `url(${me.avatar})` }}
+          />
+        </button>
+
+        <div className="actions">
+          <button className="icon-btn" aria-label="Like" title="Like">
+            <svg className="ico" viewBox="0 0 24 24">
+              <path
+                d="M12 21s-7-4.438-7-9a4 4 0 017-2 4 4 0 017 2c0 4.562-7 9-7 9z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+          </button>
+          <button className="icon-btn" aria-label="Comment" title="Comment">
+            <svg className="ico" viewBox="0 0 24 24">
+              <path
+                d="M3 5h18v11H8l-5 3V5z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+          </button>
+          <button className="icon-btn" aria-label="Send" title="Send">
+            <svg className="ico" viewBox="0 0 24 24">
+              <path
+                d="M3 11l18-8-8 18-2-7-8-3z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </article>
