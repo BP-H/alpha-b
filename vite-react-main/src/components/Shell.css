@@ -1,0 +1,64 @@
+.shell-fab-top-left {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 1000;
+  width: 52px;
+  height: 52px;
+  background: rgba(18, 20, 32, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 0.3s ease;
+}
+
+.shell-fab-top-left:hover {
+  transform: scale(1.1);
+}
+
+.shell-fab-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 75, 208, 0.3);
+  animation: spin 20s linear infinite;
+}
+
+.shell-fab-glowing-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+.shell-fab-avatar {
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.7; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .shell-fab-top-left {
+    top: 16px;
+    left: 16px;
+    width: 48px;
+    height: 48px;
+  }
+}
