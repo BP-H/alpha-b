@@ -1,239 +1,173 @@
-.feed-stream {
-  width: 100%;
-  max-width: 500px;
+/* This is the main scrollable area for the feed */
+.feed-scroll-container {
+  flex: 1; /* Takes up remaining space next to sidebar */
+  height: 100vh;
+  overflow-y: auto; /* CRITICAL: This enables scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* This centers the feed content and sets its max width */
+.feed-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; /* The main gap between each post card */
+  padding: 80px 24px 24px 24px; /* Top padding for menu bar, other padding for spacing */
+  max-width: 600px;
   margin: 0 auto;
-  position: relative;
-  z-index: 2;
 }
 
-/* Post container */
+/* Individual Post Card - now a flex container with a transparent background */
 .post {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* The small gap between bars and image, shows 3D background */
   width: 100%;
-  margin: 0;
+  background: transparent;
 }
 
-.post.first {
-  padding-top: 80px; /* Space for FAB */
+/* The bars are now flex items, not absolutely positioned */
+.post-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(18, 20, 32, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px; /* Beautiful rounded corners */
 }
 
-/* Vertical image */
-.post-image {
-  position: relative;
+.post-bar.top {
+  gap: 12px;
+}
+
+.post-bar.bottom {
+  justify-content: space-around;
+  padding: 8px 16px;
+}
+
+.post-author-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fff, #ff74de, #ff4bd0);
+}
+
+.post-meta {
+  flex: 1;
+  min-width: 0;
+}
+.post-author {
+  font-weight: 600;
+  color: #fff;
+}
+.post-time {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.post-title-chip {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* The container for the image, allows for rounded corners */
+.post-image-container {
   width: 100%;
-  aspect-ratio: 9/16; /* Vertical! */
+  aspect-ratio: 9 / 12;
+  border-radius: 16px;
   overflow: hidden;
-  background: #0a0b10;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
 
-.post-image img {
+.post-image-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Glass bars - float ON the image */
-.post-glass-top,
-.post-glass-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
-  background: rgba(15, 17, 23, 0.65);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 10;
-}
-
-.post-glass-top {
-  top: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.post-glass-bottom {
-  bottom: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  justify-content: space-between;
-}
-
-/* Avatar with glow */
-.post-avatar-ring {
-  width: 42px;
-  height: 42px;
+/* Action Buttons */
+.post-action-btn {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  padding: 2px;
-  background: linear-gradient(135deg, #ff74de, #ff4bd0);
-  box-shadow: 0 0 20px rgba(255, 75, 208, 0.4);
-}
-
-.post-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff, #ff9ae5);
-}
-
-.post-avatar-mini {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff, #c7d2fe 60%, #7c83ff);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Meta text */
-.post-meta {
-  flex: 1;
-  min-width: 0;
-}
-
-.post-author {
-  color: #fff;
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.post-time {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-.post-title-chip {
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* Action buttons - Apple simple */
-.post-action {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(20, 22, 34, 0.6);
-  color: rgba(255, 255, 255, 0.9);
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.post-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.post-action-btn:active {
+  transform: scale(0.9);
+}
+.post-action-btn.primary {
+  background: rgba(255, 75, 208, 0.2);
+  color: #ffc8ee;
 }
 
-.post-action:active {
-  transform: scale(0.92);
-}
-
-.post-action.post-profile {
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-
-.post-action.post-portal {
-  background: linear-gradient(135deg, rgba(255, 75, 208, 0.3), rgba(124, 131, 255, 0.3));
-  border-color: rgba(255, 75, 208, 0.3);
-}
-
-.post-icon {
-  font-size: 20px;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-}
-
-/* Drawer - slides down smoothly */
+/* Action Drawer */
 .post-drawer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(15, 17, 23, 0.85);
+  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(22, 25, 38, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  margin-top: -14px; /* Overlap the bottom bar slightly */
+  padding-top: 14px;
 }
-
 .post-drawer.open {
-  max-height: 200px;
+  max-height: 150px;
 }
-
 .drawer-content {
   padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.drawer-chips {
+.emoji-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
-
-.drawer-chips span {
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.drawer-chips span:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 75, 208, 0.3);
-}
-
-.drawer-emojis {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 6px;
-}
-
 .emoji-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  font-size: 18px;
+  background: none;
+  border: none;
+  font-size: 24px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: transform 0.2s;
 }
-
 .emoji-btn:hover {
-  background: rgba(255, 75, 208, 0.1);
-  transform: scale(1.2);
+  transform: scale(1.3);
 }
-
 .comment-input {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
   color: #fff;
-  font-size: 14px;
+  padding: 12px;
+  border-radius: 12px;
   outline: none;
 }
-
-.comment-input:focus {
-  border-color: rgba(255, 75, 208, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+.chip-grid {
+  display: flex;
+  gap: 8px;
 }
-
-/* Mobile responsive */
-@media (max-width: 600px) {
-  .feed-stream {
-    max-width: 100%;
-  }
-  
-  .post-image {
-    aspect-ratio: 3/4; /* Slightly less tall on mobile */
-  }
+.chip-grid span {
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  cursor: pointer;
 }
