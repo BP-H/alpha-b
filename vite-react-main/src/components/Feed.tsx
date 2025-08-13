@@ -1,2 +1,2 @@
-// Delegate to the mobile-only Feed to avoid prop drift.
+// Keep a single Feed implementation to avoid prop drift.
 export { default } from "./feed/Feed";
