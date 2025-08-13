@@ -1,157 +1,89 @@
-/* ==========================================================================
-   Global Styles (Apple-clean, square, frosted)
-   Drop-in replacement for: src/styles.css
-   ========================================================================== */
+/* Global reset */
+*,*::before,*::after{box-sizing:border-box}
+html,body,#root{height:100%}
+html,body{margin:0;padding:0}
+img,svg,video,canvas{display:block;max-width:100%}
+button,input,textarea,select{font:inherit;color:inherit}
 
-/* ---------- 1) Modern reset ---------- */
-*, *::before, *::after { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-html, body { margin: 0; padding: 0; }
-img, picture, video, canvas, svg { display: block; max-width: 100%; }
-button, input, textarea, select { font: inherit; color: inherit; }
-a { color: inherit; text-decoration: none; }
-:focus { outline: none; }
-
-/* ---------- 2) Theme tokens ---------- */
-:root {
-  /* surfaces */
-  --bg: #0B0D12;                 /* deep space background */
-  --panel: #10141c;              /* elevated surfaces */
-  --glass: rgba(16,18,24,.58);   /* frosted base */
-  --glass-strong: rgba(16,18,24,.72);
-
-  /* ink */
-  --ink-1: #F2F4F8;              /* primary text */
-  --ink-2: #A0A9B8;              /* secondary text */
-
-  /* strokes (hairline borders) */
-  --stroke-1: rgba(255,255,255,.06);
-  --stroke-2: rgba(255,255,255,.12);
-
-  /* accent (iOS blue) */
-  --accent: #0A84FF;
-
-  /* sizing */
-  --bar-h: 56px;                 /* mobile top/bottom bar height */
-  --bar-h-desktop: 64px;
-
-  /* typography */
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-             "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, system-ui, sans-serif;
+/* Theme */
+:root{
+  --bg:#0B0D12;
+  --ink:#F2F4F8;
+  --ink-2:#A0A9B8;
+  --glass:rgba(16,18,24,.58);
+  --glass-strong:rgba(16,18,24,.72);
+  --stroke-1:rgba(255,255,255,.06);
+  --stroke-2:rgba(255,255,255,.12);
+  --accent:#0A84FF;
+  --bar-h:56px;
+  --img-gap:12px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,system-ui,sans-serif;
 }
 
-/* ---------- 3) App background & typography ---------- */
-html, body {
-  background-color: var(--bg);
-  color: var(--ink-1);
-  font-family: var(--font-ui);
-  font-weight: 500;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:1.35}
+
+/* Square world */
+button,input,textarea,.card,.panel,.chip,.pill{border-radius:0!important}
+
+/* Frost helpers */
+.frost{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  backdrop-filter:blur(18px) saturate(160%);
+  border-top:1px solid var(--stroke-1);
+  border-bottom:1px solid var(--stroke-1);
 }
 
-/* Keep vertical rhythm tight & crisp like iOS */
-body { line-height: 1.35; }
-
-/* ---------- 4) Global “square” look: no rounding anywhere ---------- */
-button, input, textarea, select,
-.card, .panel, .post, .chip, .pill {
-  border-radius: 0 !important;
+/* Scroll area wrapper used by Feed */
+.content-viewport{
+  height:100dvh;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
-/* ---------- 5) Frosted utilities (use on headers/nav/panels) ---------- */
-.frost {
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
-  border-top: 1px solid var(--stroke-1);
-  border-bottom: 1px solid var(--stroke-1);
+/* Minimal icon buttons */
+.icon-btn{
+  width:44px;height:44px;display:grid;place-items:center;background:transparent;border:0;color:#E6E8EE;cursor:pointer
 }
-.frost-strong {
-  background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
-  backdrop-filter: blur(20px) saturate(170%);
-  border-top: 1px solid var(--stroke-1);
-  border-bottom: 1px solid var(--stroke-1);
-}
+.icon-btn .ico{width:22px;height:22px}
 
-/* ---------- 6) Hairline separators ---------- */
-.hr,
-.separator {
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--stroke-2), transparent);
-  border: 0;
+/* Simple modal */
+.modal-mask{
+  position:fixed;inset:0;display:grid;place-items:center;z-index:60;
+  background:rgba(0,0,0,.5)
+}
+.modal-panel{
+  width:min(720px,92vw);padding:18px;border:1px solid var(--stroke-2);
+  background:rgba(18,20,28,.92);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  backdrop-filter:blur(18px) saturate(160%);
 }
 
-/* ---------- 7) Icon buttons (square, minimal) ---------- */
-.icon-btn {
-  width: 44px; height: 44px;
-  display: grid; place-items: center;
-  border: 0; background: transparent; color: #E6E8EE;
-  cursor: pointer; padding: 0; margin: 0;
+/* Feed basics */
+.feed-wrap{padding:0}
+.feed-content{width:min(1200px,100%);margin:0 auto;display:grid;gap:0}
+.post{border:1px solid var(--stroke-2);background:rgba(255,255,255,.05)}
+.post-head,.post-foot{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.post-head{background:rgba(20,22,34,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--stroke-1)}
+.post-foot{background:rgba(20,22,34,.72);border-top:1px solid var(--stroke-1);justify-content:space-between}
+.post-author{font-weight:600}
+.post-sub{color:var(--ink-2);font-size:12px}
+.post-media{display:grid;gap:var(--img-gap)}
+.post-media.one{grid-template-columns:1fr}
+.post-media.two{grid-template-columns:1fr 1fr}
+.post-media img{width:100%;height:100%;object-fit:cover}
+
+/* Avatars */
+.avatar{
+  width:28px;height:28px;background-size:cover;background-position:center;border:1px solid var(--stroke-2)
 }
-.icon-btn .ico { width: 22px; height: 22px; }
-.icon-btn:active { opacity: .85; }
+.avatar.me{width:32px;height:32px}
 
-/* ---------- 8) Text buttons & inputs (square, hairline) ---------- */
-.btn, button.btn {
-  height: 40px; padding: 0 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid var(--stroke-2);
-  color: var(--ink-1);
-}
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* Action icons row (no emojis) */
+.actions{display:flex;gap:6px}
 
-.input, input[type="text"], input[type="search"], textarea {
-  height: 40px; padding: 0 10px; background: rgba(255,255,255,.06);
-  border: 1px solid var(--stroke-2); color: var(--ink-1);
-}
+/* Tiny chips */
+.chip{padding:3px 6px;border:1px solid var(--stroke-2);background:rgba(255,255,255,.06);color:var(--ink-2);font-size:11px}
 
-/* ---------- 9) Focus ring (iOS-like) ---------- */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* ---------- 10) Page chrome helpers ---------- */
-/* Use these if your app content needs to live between top/bottom bars */
-.content-viewport {
-  height: 100dvh;
-  padding-top: var(--bar-h);
-  padding-bottom: var(--bar-h);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 1024px) {
-  .content-viewport {
-    padding-top: var(--bar-h-desktop);
-    padding-bottom: 0;          /* bottom bar typically hidden on desktop */
-  }
-}
-
-/* ---------- 11) Cards / panels (square, subtle) ---------- */
-.card, .panel, .surface {
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--stroke-2);
-  box-shadow: none;
-}
-
-/* ---------- 12) Links & subtle states ---------- */
-a:hover { opacity: .92; }
-.muted { color: var(--ink-2); }
-
-/* ---------- 13) Scrollbar (thin, unobtrusive) ---------- */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border: 2px solid transparent; background-clip: padding-box; }
-::-webkit-scrollbar-track { background: transparent; }
-
-/* ---------- 14) Media fit helpers ---------- */
-.media-cover { width: 100%; height: 100%; object-fit: cover; }
-.media-contain { width: 100%; height: 100%; object-fit: contain; }
-
-/* ---------- 15) Visually hidden (for a11y) ---------- */
-.visually-hidden {
-  position: absolute !important; clip: rect(1px,1px,1px,1px);
-  padding: 0 !important; border: 0 !important; height: 1px !important; width: 1px !important; overflow: hidden;
-}
+/* Hide default focus ring; provide subtle one */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
