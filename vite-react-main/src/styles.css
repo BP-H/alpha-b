@@ -10,11 +10,12 @@ button,input,textarea,select{font:inherit;color:inherit}
 :root{
   --ink:#f2f4f8; --ink-2:#9aa3b2;
   --stroke-1:rgba(255,255,255,.06); --stroke-2:rgba(255,255,255,.12);
-  --glass: rgba(255,255,255,0.10);        /* more white base (was rgba(14,16,22,.36)) */
-  --glass-accent: rgba(15,120,255,0.04);  /* keep a faint blue tint */
-  --glass-strong: rgba(255,255,255,0.14);
+  --glass-base: rgba(14,16,22,.36);
+  --glass-accent: rgba(15,120,255,0.06);
+  --glass: color-mix(in srgb, rgba(255,255,255,0.9) 40%, var(--glass-base) 60%);
+  --glass-strong: color-mix(in srgb, rgba(255,255,255,0.95) 45%, var(--glass-base) 55%);
   --post-gap:1px;                 /* gap BETWEEN posts only */
-  --feed-max:200%;
+  --feed-max:100%;
   --stripe-h:64px;                  /* same height for top & bottom frost */
   --orb-size:64px;
 }
