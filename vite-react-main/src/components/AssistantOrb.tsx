@@ -1,368 +1,204 @@
-// src/components/AssistantOrb.tsx
-import { useEffect, useMemo, useRef, useState } from "react";
-import bus from "../lib/bus";
-import { Post } from "../types";
+import { useEffect, useRef, useState } from "react";
 
-/** Web Speech shim (do NOT redeclare speechSynthesis types) */
-declare global {
-  interface Window {
-    webkitSpeechRecognition?: any;
-    SpeechRecognition?: any;
-  }
-}
-type SpeechRecognitionLike = any;
+type Props = { onAnalyzeImage: (imgUrl: string) => void };
+type Mode = "idle" | "menu" | "analyze";
 
-type XY = { x: number; y: number };
-const FLY_MS = 600;
-const DEFAULT_POST: Post = { id: -1, author: "@proto_ai", title: "Prototype Moment", image: "" };
+const HOLD_MS = 600;
+const SNAP_PAD = 12;
 
-export default function AssistantOrb({
-  onPortal,
-  hidden = false,
-}: {
-  onPortal: (post: Post, at: XY) => void;
-  hidden?: boolean;
-}) {
-  // ---------- positioning / flight ----------
-  const dock = useRef<XY>({ x: 0, y: 0 });
-  const [pos, setPos] = useState<XY>(() => {
-    const x = window.innerWidth - 76;
-    const y = window.innerHeight - 76;
-    dock.current = { x, y };
-    return { x, y };
-  });
-  const [flying, setFlying] = useState(false);
+export default function AssistantOrb({ onAnalyzeImage }: Props) {
+  const orbRef = useRef<HTMLDivElement>(null);
+  const holdRef = useRef<number | null>(null);
+  const [mode, setMode] = useState<Mode>("idle");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const lastTap = useRef(0);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const onR = () => {
-      const x = window.innerWidth - 76;
-      const y = window.innerHeight - 76;
-      dock.current = { x, y };
-      if (!flying) setPos({ x, y });
-    };
-    window.addEventListener("resize", onR);
-    return () => window.removeEventListener("resize", onR);
-  }, [flying]);
-
-  // Fly to hovered card, then portal
-  useEffect(() => {
-    return bus.on("orb:portal", (payload: { post: Post; x: number; y: number }) => {
-      setFlying(true);
-      setPos({ x: payload.x, y: payload.y });
-      window.setTimeout(() => {
-        onPortal(payload.post, { x: payload.x, y: payload.y });
-        setPos({ ...dock.current });
-        window.setTimeout(() => setFlying(false), 350);
-      }, FLY_MS);
-    });
-  }, [onPortal]);
-
-  // ---------- voice: half-duplex listen/speak ----------
-  const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const listeningRef = useRef(false);
-  const speakingRef = useRef(false);
-  const restartOnEndRef = useRef(false);
-  const firstGestureRef = useRef(false);
-  const lastHoverRef = useRef<{ post: Post; x: number; y: number } | null>(null);
-
-  const [micOn, setMicOn] = useState(false);
-  const [toast, setToast] = useState("");
-
-  // track hovered card so “enter world” knows where to fly
-  useEffect(() => bus.on("feed:hover", (p) => (lastHoverRef.current = p)), []);
-
-  // 1) Unlock audio + warm voices (first user gesture)
-  async function unlockAudioAndVoices() {
-    if (firstGestureRef.current) return;
-    firstGestureRef.current = true;
-    try {
-      const synth: any = (window as any).speechSynthesis;
-      synth?.cancel?.();
-      // warm voices list
-      await new Promise<void>((resolve) => {
-        const done = () => resolve();
-        const id = setTimeout(done, 400);
-        synth?.addEventListener?.("voiceschanged", () => {
-          clearTimeout(id);
-          done();
-        }, { once: true });
-      });
-      // silent blip to satisfy autoplay
-      const Utter = (window as any).SpeechSynthesisUtterance;
-      if (Utter && synth) {
-        const u = new Utter(" ");
-        u.volume = 0;
-        synth.speak(u);
-        synth.cancel();
-      }
-    } catch {}
-  }
-
-  // 2) Ensure mic permission (and HTTPS)
-  async function ensureMic(): Promise<boolean> {
-    if (!location.hostname.includes("localhost") && location.protocol !== "https:") {
-      setToast("Mic needs HTTPS (use Vercel prod or localhost).");
-      return false;
-    }
-    try {
-      const stAny = (navigator as any).permissions?.query
-        ? await (navigator as any).permissions.query({ name: "microphone" as any })
-        : null;
-      if (stAny?.state === "denied") return false;
-    } catch {}
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-      s.getTracks().forEach((t) => t.stop());
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // 3) Speak (pause recognition during TTS to avoid feedback)
-  function speak(text: string): Promise<void> {
-    return new Promise((resolve) => {
+  const [pos, setPos] = useState<{ x: number; y: number }>(() => {
+    if (typeof window !== "undefined") {
       try {
-        const synth: any = (window as any).speechSynthesis;
-        const Utter = (window as any).SpeechSynthesisUtterance;
-        if (!synth || !Utter) return resolve();
-
-        synth.cancel();
-        const u = new Utter(text || "Okay.");
-        const v = synth.getVoices?.().find((vv: any) => vv?.lang?.startsWith?.("en"));
-        if (v) u.voice = v;
-        u.rate = 1;
-        u.pitch = 1;
-        u.lang = "en-US";
-
-        u.onstart = () => {
-          speakingRef.current = true;
-          restartOnEndRef.current = false;
-          try {
-            recRef.current?.stop();
-          } catch {}
-        };
-
-        u.onend = () => {
-          speakingRef.current = false;
-          if (micOn) {
-            restartOnEndRef.current = true;
-            setTimeout(() => {
-              try {
-                recRef.current?.start();
-              } catch {}
-            }, 200);
-          }
-          resolve();
-        };
-
-        synth.speak(u);
-      } catch {
-        resolve();
-      }
-    });
-  }
-
-  // 4) Call assistant (reads API key saved in Sidebar → localStorage)
-  async function askAssistant(q: string): Promise<string> {
-    const apiKey = localStorage.getItem("sn2177.apiKey") || "";
-    try {
-      const r = await fetch("/api/assistant-reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q, apiKey: apiKey || undefined }),
-      });
-      const j = await r.json().catch(() => ({}));
-      if (!j?.ok) throw new Error(j?.error || "assistant error");
-      return (j.text || "").trim();
-    } catch (e) {
-      console.error(e);
-      return "";
-    }
-  }
-
-  // 5) Recognizer lifecycle (single instance)
-  useEffect(() => {
-    const Ctor = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    if (!Ctor) {
-      setToast("Voice not supported in this browser");
-      return;
-    }
-
-    const rec: SpeechRecognitionLike = new Ctor();
-    recRef.current = rec;
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = "en-US";
-
-    rec.onstart = () => {
-      listeningRef.current = true;
-      setToast("Listening…");
-    };
-    rec.onerror = (e: any) => {
-      const code = e?.error || "mic error";
-      const map: Record<string, string> = {
-        "not-allowed": "Mic blocked — allow in site settings.",
-        "no-speech": "Didn’t catch that.",
-        "aborted": "Restarting…",
-        "audio-capture": "No mic found.",
-        "network": "Network error.",
-      };
-      setToast(map[code] || "Mic error");
-      if (micOn && !speakingRef.current) setTimeout(() => { try { rec.start(); } catch {} }, 400);
-    };
-    rec.onend = () => {
-      listeningRef.current = false;
-      setToast(micOn ? "…" : "");
-      if (restartOnEndRef.current && !speakingRef.current) {
-        setTimeout(() => {
-          try {
-            rec.start();
-          } catch {}
-        }, 250);
-      }
-    };
-
-    rec.onresult = async (e: any) => {
-      // interim
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (!r.isFinal) interim += r[0]?.transcript || "";
-      }
-      if (interim) setToast(`…${interim.trim()}`);
-
-      // finals
-      const finals = Array.from(e.results as any).filter((r: any) => r.isFinal);
-      if (!finals.length) return;
-      const final = finals.map((r: any) => r[0]?.transcript || "").join(" ").trim();
-      if (!final) return;
-
-      bus.emit("chat:add", { role: "user", text: final });
-
-      // Local intents first (fast UI)
-      const t = final.toLowerCase();
-      if ((/enter|open/.test(t)) && /(world|portal|void)/.test(t)) {
-        const target =
-          lastHoverRef.current ?? { post: DEFAULT_POST, x: window.innerWidth - 56, y: window.innerHeight - 56 };
-        bus.emit("orb:portal", target);
-        await speak("Entering world.");
-        setToast("");
-        return;
-      }
-      if ((/leave|exit|back/.test(t)) && /(world|portal|feed|void)/.test(t)) {
-        bus.emit("ui:leave", {});
-        await speak("Back to feed.");
-        setToast("");
-        return;
-      }
-      if (/make (it )?dark(er)?|dark mode/.test(t)) {
-        bus.emit("world:update", { theme: "dark" });
-        await speak("Dark mode.");
-        setToast("");
-        return;
-      }
-      if (/light(er)? mode|bright(er)?/.test(t)) {
-        bus.emit("world:update", { theme: "light" });
-        await speak("Light mode.");
-        setToast("");
-        return;
-      }
-      if (/(more|add) orbs?/.test(t)) {
-        bus.emit("world:update", { orbCount: 20 });
-        await speak("More orbs.");
-        setToast("");
-        return;
-      }
-      const m = t.match(/(orb|color).*(teal|cyan|blue|green|orange|red|white|black)/);
-      if (m) {
-        const named: Record<string, string> = {
-          teal: "#14b8a6",
-          cyan: "#06b6d4",
-          blue: "#3b82f6",
-          green: "#22c55e",
-          orange: "#f97316",
-          red: "#ef4444",
-          white: "#ffffff",
-          black: "#111827",
-        };
-        bus.emit("world:update", { orbColor: named[m[2]] || "#67e8f9" });
-        await speak(`Orbs ${m[2]}.`);
-        setToast("");
-        return;
-      }
-
-      // Ask the assistant (uses env OPENAI_API_KEY on server, or localStorage key in dev)
-      const reply = await askAssistant(final);
-      const say = reply || "Okay.";
-      bus.emit("chat:add", { role: "assistant", text: say });
-      await speak(say);
-      setToast("");
-    };
-
-    return () => {
-      try {
-        rec.stop();
+        const s = localStorage.getItem("orb-pos");
+        if (s) return JSON.parse(s);
       } catch {}
-    };
-  }, [micOn]);
+    }
+    return { x: 16, y: 16 };
+  });
 
-  // keepalive: nudge recognition if it silently drops
   useEffect(() => {
-    const id = setInterval(() => {
-      if (micOn && !listeningRef.current && !speakingRef.current) {
-        try {
-          recRef.current?.start();
-        } catch {}
-      }
-    }, 4000);
-    return () => clearInterval(id);
-  }, [micOn]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("orb-pos", JSON.stringify(pos));
+    }
+    if (orbRef.current) {
+      orbRef.current.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+    }
+  }, [pos]);
 
-  async function startListening() {
-    await unlockAudioAndVoices();
-    const ok = await ensureMic();
-    if (!ok) {
-      setToast("Mic blocked — allow in site settings / use HTTPS");
-      bus.emit("chat:add", {
-        role: "system",
-        text: "Microphone blocked. Click the padlock → allow microphone.",
-      });
+  function clamp(x: number, y: number) {
+    const w = typeof window !== "undefined" ? window.innerWidth : 390;
+    const h = typeof window !== "undefined" ? window.innerHeight : 844;
+    const size = 64;
+    return {
+      x: Math.min(Math.max(x, SNAP_PAD), w - size - SNAP_PAD),
+      y: Math.min(Math.max(y, SNAP_PAD), h - size - SNAP_PAD),
+    };
+  }
+
+  function startAnalyze() {
+    setMode("analyze");
+    setMenuOpen(false);
+    orbRef.current?.classList.remove("grow");
+    const overlay = document.createElement("div");
+    overlay.className = "analyze-overlay";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.pointerEvents = "none";
+    overlay.style.zIndex = "55";
+    overlay.style.background =
+      "radial-gradient(600px 600px at var(--x,50%) var(--y,50%), rgba(10,132,255,.18), transparent 60%)";
+    document.body.appendChild(overlay);
+    overlayRef.current = overlay;
+  }
+
+  function stopAnalyze() {
+    overlayRef.current?.remove();
+    overlayRef.current = null;
+    setMode("idle");
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    (e.target as Element).setPointerCapture(e.pointerId);
+
+    // double-tap → snap TL + vortex
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      setMenuOpen(false);
+      setMode("idle");
+      setPos({ x: 12, y: 12 });
+      orbRef.current?.classList.add("vortex");
+      window.setTimeout(() => orbRef.current?.classList.remove("vortex"), 900);
       return;
     }
-    restartOnEndRef.current = true;
-    try {
-      recRef.current?.start();
-      setMicOn(true);
-    } catch {}
-  }
-  function stopListening() {
-    restartOnEndRef.current = false;
-    try {
-      recRef.current?.stop();
-    } catch {}
-    setMicOn(false);
-    setToast("");
-  }
-  const toggleMic = () => (micOn ? stopListening() : startListening());
+    lastTap.current = now;
 
-  // ---------- render ----------
-  const style = useMemo(
-    () => ({ left: pos.x + "px", top: pos.y + "px", display: hidden ? "none" : undefined }),
-    [pos, hidden]
-  );
+    setDragging(true);
+    const startX = e.clientX - pos.x;
+    const startY = e.clientY - pos.y;
+
+    // long press → radial menu
+    holdRef.current = window.setTimeout(() => {
+      setMenuOpen(true);
+      setMode("menu");
+      orbRef.current?.classList.add("grow");
+    }, HOLD_MS);
+
+    const move = (ev: PointerEvent) => {
+      if (!dragging) return;
+      const next = clamp(ev.clientX - startX, ev.clientY - startY);
+      setPos(next);
+    };
+
+    const up = (ev: PointerEvent) => {
+      setDragging(false);
+      if (holdRef.current) {
+        clearTimeout(holdRef.current);
+        holdRef.current = null;
+      }
+
+      if (mode === "analyze") {
+        const el = document.elementFromPoint(ev.clientX, ev.clientY) as
+          | HTMLElement
+          | null;
+        const url =
+          el?.closest("[data-asset]")?.getAttribute("data-asset") ?? undefined;
+        if (url) onAnalyzeImage(url);
+        stopAnalyze();
+      }
+
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  function onPointerCancel() {
+    setDragging(false);
+    if (holdRef.current) {
+      clearTimeout(holdRef.current);
+      holdRef.current = null;
+    }
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (mode !== "analyze" || !overlayRef.current) return;
+    overlayRef.current.style.setProperty("--x", `${e.clientX}px`);
+    overlayRef.current.style.setProperty("--y", `${e.clientY}px`);
+  }
 
   return (
-    <button
-      className={`assistant-orb ${micOn ? "mic" : ""} ${flying ? "flying" : ""}`}
-      style={style}
-      aria-label="Assistant"
-      title={micOn ? "Listening… (click to stop)" : "Assistant (click to talk)"}
-      onClick={toggleMic}
-    >
-      <span className="assistant-orb__core" />
-      <span className="assistant-orb__ring" />
-      {toast && <span className="assistant-orb__toast">{toast}</span>}
-    </button>
-  );
-}
+    <>
+      <div
+        ref={orbRef}
+        className={`portal-orb ${menuOpen ? "open" : ""} ${
+          mode === "analyze" ? "analyzing" : ""
+        }`}
+        style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+        onPointerDown={onPointerDown}
+        onPointerCancel={onPointerCancel}
+        onPointerMove={onPointerMove}
+        role="button"
+        aria-label="AI Portal"
+        title="AI Portal"
+      >
+        <div className="orb-core" />
+        {menuOpen && (
+          <div className="radial-menu">
+            <button className="rm-item" onClick={startAnalyze} title="Analyze">
+              <svg viewBox="0 0 24 24" className="ico">
+                <path d="M15.5 15.5L21 21" stroke="currentColor" strokeWidth="2" fill="none" />
+                <circle cx="10" cy="10" r="6" stroke="currentColor" strokeWidth="2" fill="none" />
+              </svg>
+              <span>Analyze</span>
+            </button>
+            <button
+              className="rm-item"
+              onClick={() => {
+                setMenuOpen(false);
+                orbRef.current?.classList.remove("grow");
+                alert("Compose: wire this to your AI API.");
+              }}
+              title="Compose"
+            >
+              <svg className="ico" viewBox="0 0 24 24">
+                <path d="M4 20h16M4 4h12l4 4v8" fill="none" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              <span>Compose</span>
+            </button>
+            <button
+              className="rm-item"
+              onClick={() => {
+                setMenuOpen(false);
+                setMode("idle");
+                orbRef.current?.classList.remove("grow");
+              }}
+              title="Close"
+            >
+              <svg className="ico" viewBox="0 0 24 24">
+                <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              <span>Close</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        .portal-orb{position:fixed;left:0;top:0;z-index:56;width:64px;height:64px;transition:transform .18s ease;contain:layout paint}
+        .orb-core{
+          width:100%;height:100%;
+          background:
+            radial-gradient(60% 60% at 40% 35%, rgba(255,255,255,.9), rgba(255,255,255,.2) 65%, transparent 70%),
+            radial-gradient(80% 80% at 70% 70%, rgba(10,132,255,.8), rgba(10,132,255,.2) 70%, transparent 72%),
+            radia
