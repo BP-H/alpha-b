@@ -1,7 +1,6 @@
-import "./feed.css";
 import { Post, User } from "../../types";
 import PostCard from "../PostCard";
-import "./feed.css";
+import "./Feed.css";
 
 type Props = { posts: Post[]; me: User; onOpenProfile?: (id: string) => void };
 
@@ -10,7 +9,7 @@ export default function Feed({ posts, me, onOpenProfile }: Props) {
     <div className="content-viewport feed-wrap">
       <div className="feed-content">
         {posts.map((p) => (
-          <PostCard key={p.id} post={p} me={me} onOpenProfile={onOpenProfile} />
+          <PostCard key={p.id} post={p as Post} me={me as User} onOpenProfile={onOpenProfile} />
         ))}
       </div>
     </div>
