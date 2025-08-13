@@ -24,7 +24,7 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
           className="avatar-circle"
           style={{ backgroundImage: `url(${post.authorAvatar})` }}
           aria-label={`${post.author} profile`}
-          onClick={() => onOpenProfile?.(post.id)}
+          onClick={() => onOpenProfile?.(post.author)}
         />
         <div className="author">
           <div className="name">{post.author}</div>

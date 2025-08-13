@@ -1,32 +1,20 @@
-// src/components/World3D.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Float, Instances, Instance, OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
-import { Post } from "../types";
+import { useNavigate, useParams } from "react-router-dom";
 import bus from "../lib/bus";
 import { WorldState, defaultWorld, clampWorld } from "../lib/world";
+import { ringPositions, FloorGrid } from "./World3D";
+import PostCard from "./PostCard";
+import { Post, User } from "../types";
 
-export function ringPositions(count: number) {
-  const arr: [number, number, number][] = [];
-  const r = 7.2;
-  for (let i = 0; i < count; i++) {
-    const a = (i / count) * Math.PI * 2;
-    arr.push([Math.cos(a) * r, Math.sin(a) * 0.6, -10 - (i % 3) * 0.35]);
-  }
-  return arr;
-}
+// Props include list of all posts and current user info
+export default function ProfileWorld({ posts, me }: { posts: Post[]; me: User }) {
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-export function FloorGrid({ color, opacity }: { color: string; opacity: number }) {
-  const geo = useMemo(() => new THREE.PlaneGeometry(240, 240, 120, 120), []);
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.4, -8]} geometry={geo}>
-      <meshBasicMaterial color={color} wireframe transparent opacity={opacity} />
-    </mesh>
-  );
-}
+  const userPosts = useMemo(() => posts.filter((p) => p.author === id), [posts, id]);
 
-export default function World3D({ selected, onBack }: { selected: Post | null; onBack: () => void }) {
   const [w, setW] = useState<WorldState>(defaultWorld);
   useEffect(() => bus.on("world:update", (p: Partial<WorldState>) => setW((s) => clampWorld({ ...s, ...p }))), []);
 
@@ -35,7 +23,7 @@ export default function World3D({ selected, onBack }: { selected: Post | null; o
   const gridC = w.theme === "dark" ? "#283044" : "#e5eaf4";
   const fogNear = 12 + w.fogLevel * 6;
   const fogFar = 44 - w.fogLevel * 16;
-  const positions = useMemo(() => ringPositions(w.orbCount), [w.orbCount]);
+  const positions = useMemo(() => ringPositions(userPosts.length || 1), [userPosts.length]);
 
   return (
     <div className="world-wrap" style={{ position: "relative" }}>
@@ -63,10 +51,17 @@ export default function World3D({ selected, onBack }: { selected: Post | null; o
         <OrbitControls enablePan={false} />
       </Canvas>
 
-      {/* Bottom-only glass bar */}
       <div className="world-bottombar">
-        <button className="pill" onClick={onBack}>Back to Feed</button>
-        {selected && <span className="crumb">Portal • {selected.title}</span>}
+        <button className="pill" onClick={() => navigate("/")}>Back to Feed</button>
+        {id && <span className="crumb">Profile • {id}</span>}
+      </div>
+
+      <div className="content-viewport feed-wrap" style={{ position: "absolute", top: 0, left: 0 }}>
+        <div className="feed-content">
+          {userPosts.map((p) => (
+            <PostCard key={p.id} post={p} me={me} />
+          ))}
+        </div>
       </div>
     </div>
   );
