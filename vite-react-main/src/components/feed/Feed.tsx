@@ -1,3 +1,4 @@
+import "./feed.css";
 import { Post, User } from "../../types";
 import PostCard from "../PostCard";
 import "./feed.css";
