@@ -8,21 +8,21 @@ export default function Feed({ onPortal }: { onPortal?: (p: Post, at?: { x: numb
     {
       id: 1,
       author: "@eva",
-      avatarUrl: "/avatars/eva.png", // Use placeholder or real URLs
+      avatar: "/avatars/eva.png", // Corrected from avatarUrl
       title: "Neon Dreams",
       image: "https://images.unsplash.com/photo-1534488972529-a1b2eda4e893?q=80&w=1887&auto=format&fit=crop",
     },
     {
       id: 2,
       author: "@proto_ai",
-      avatarUrl: "/avatars/proto.png",
+      avatar: "/avatars/proto.png", // Corrected from avatarUrl
       title: "Cloud Architecture",
       image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1200&auto=format&fit=crop",
     },
     {
       id: 3,
       author: "@forest_bot",
-      avatarUrl: "/avatars/forest.png",
+      avatar: "/avatars/forest.png", // Corrected from avatarUrl
       title: "Alpine Ascent",
       image: "https://images.unsplash.com/photo-1454391304352-2bf4678b1a7a?q=80&w=1200&auto=format&fit=crop",
     }
