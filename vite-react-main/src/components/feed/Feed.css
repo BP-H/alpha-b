@@ -1,2 +1,15 @@
 /* kept tiny; most rules live in styles.css */
 :root{ --post-gap: 10px; }
+
+.new-posts-btn{
+  position:absolute;
+  top:8px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+  background:var(--glass);
+  color:var(--ink);
+  border:1px solid var(--stroke-2);
+  padding:6px 12px;
+  border-radius:20px;
+}

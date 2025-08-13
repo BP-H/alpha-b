@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Shell.css";
 import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
-import PostCard from "./PostCard";
 import AssistantOrb from "./AssistantOrb";
 import World3D from "./World3D";
+import Feed from "./feed/Feed";
 
 const IMG = (id: number) => `https://picsum.photos/id/${id}/1080/1350`;
 const SEED = [
@@ -17,18 +17,38 @@ export default function Shell() {
   const avatar = (i: number) => `https://i.pravatar.cc/100?img=${(i % 70) + 1}`;
   const me: User = { id: "me", name: "You", avatar: avatar(99) };
 
-  const posts: Post[] = useMemo(
-    () =>
-      SEED.map((id, i) => ({
-        id: `p${i}`,
-        author: i % 3 === 0 ? "Elena R." : i % 3 === 1 ? "Expanso" : "Lola",
-        authorAvatar: avatar(i),
-        title: i % 5 === 0 ? "Travel" : undefined,
-        time: `${(i % 8) + 1}h`,
-        images: [{ id: `i${i}`, url: IMG(id) }],
-      })),
-    []
+  // initial post generation
+  const [posts, setPosts] = useState<Post[]>(() =>
+    SEED.map((id, i) => ({
+      id: `p${i}`,
+      author: i % 3 === 0 ? "Elena R." : i % 3 === 1 ? "Expanso" : "Lola",
+      authorAvatar: avatar(i),
+      title: i % 5 === 0 ? "Travel" : undefined,
+      time: `${(i % 8) + 1}h`,
+      images: [{ id: `i${i}`, url: IMG(id) }],
+    }))
   );
+
+  // simulate streaming new posts with polling
+  const nextIndex = useRef(SEED.length);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPosts((prev) => {
+        const i = nextIndex.current++;
+        const imgId = SEED[i % SEED.length];
+        const post: Post = {
+          id: `p${i}`,
+          author: i % 3 === 0 ? "Elena R." : i % 3 === 1 ? "Expanso" : "Lola",
+          authorAvatar: avatar(i),
+          title: i % 5 === 0 ? "Travel" : undefined,
+          time: "now",
+          images: [{ id: `i${i}`, url: IMG(imgId) }],
+        };
+        return [post, ...prev];
+      });
+    }, 10000);
+    return () => clearInterval(id);
+  }, []);
 
   const onEnterWorld = () => {
     console.log("Enter Universe");
@@ -45,19 +65,12 @@ export default function Shell() {
       <BrandBadge onEnterUniverse={onEnterWorld} />
 
       {/* Feed */}
-      <main className="content-viewport feed-wrap">
-        <div className="feed-content">
-          {posts.map((p: Post) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              me={me}
-              onOpenProfile={(id) => console.log("profile:", id)}
-              onEnterWorld={onEnterWorld}
-            />
-          ))}
-        </div>
-      </main>
+      <Feed
+        posts={posts}
+        me={me}
+        onOpenProfile={(id) => console.log("profile:", id)}
+        onEnterWorld={onEnterWorld}
+      />
 
       {/* Floating orb (bottom-right) */}
       <AssistantOrb />
