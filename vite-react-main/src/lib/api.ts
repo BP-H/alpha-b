@@ -16,3 +16,12 @@ export async function quickChat(apiKey: string) {
   });
   return r.json();
 }
+
+export async function assistantReply(q: string, apiKey?: string) {
+  const r = await fetch("/api/assistant-reply", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(apiKey ? { q, apiKey } : { q }),
+  });
+  return r.json();
+}
