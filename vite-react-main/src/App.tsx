@@ -1,61 +1,43 @@
 import { useState } from "react";
+import "./styles.css";
+
+import { avatar, photo } from "./lib/placeholders";
+import { Post, User } from "./types";
 import Feed from "./components/feed/Feed";
 import AssistantOrb from "./components/AssistantOrb";
-import { Post, User } from "./types";
-import { avatar, photo } from "./lib/placeholders";
-import Modal from "./components/Modal";
+import WorldScreen from "./components/WorldScreen";
 
 const me: User = { id: "me", name: "You", avatar: avatar("You") };
 
-const seedPosts: Post[] = [
-  {
-    id: "p1",
-    author: "Elena R.",
-    authorAvatar: avatar("Elena R"),
-    title: "Travel",
-    subtitle: "Monaco",
-    time: "4h · Edited",
-    images: [
-      { id: "i1", url: photo("AIRPORT • 4:5", 1200, 1500) },
-      { id: "i2", url: photo("SEA • 4:5", 1200, 1500) },
-    ],
-  },
-  {
-    id: "p2",
-    author: "Expanso",
-    authorAvatar: avatar("Expanso"),
-    title: "Ad",
-    subtitle: "Promoted",
-    time: "Sponsored",
-    images: [{ id: "i1", url: photo("SLOW DATA ANALYSIS • 16:9", 1600, 900) }],
-  },
+const postsSeed: Post[] = [
+  { id: "p1", author: "Elena R.", authorAvatar: avatar("Elena R"), title: "Travel", time: "4h · Edited", images: [{ id: "a", url: photo(1080,1350) }] },
+  { id: "p2", author: "Expanso", authorAvatar: avatar("Expanso"), title: "Ad", time: "Sponsored", images: [{ id: "b", url: photo(1080,1350) }] },
+  { id: "p3", author: "Lola", authorAvatar: avatar("Lola"), time: "2h", images: [{ id: "c", url: photo(1080,1350) }] },
 ];
 
 export default function App() {
-  const [posts] = useState<Post[]>(seedPosts);
-  const [modal, setModal] = useState<{ open: boolean; img?: string }>({ open: false });
-
-  function handleAnalyzeImage(imgUrl: string) {
-    setModal({ open: true, img: imgUrl });
-  }
+  const [mode, setMode] = useState<"feed"|"world">("feed");
+  const [posts] = useState<Post[]>(postsSeed);
 
   return (
     <>
-      <Feed posts={posts} me={me} onOpenProfile={(id) => console.log("profile:", id)} />
-      <AssistantOrb onAnalyzeImage={handleAnalyzeImage} />
-      <Modal open={modal.open} onClose={() => setModal({ open: false })} title="Assistant">
-        <div style={{ display: "grid", gap: 12 }}>
-          <div className="chip">Demo</div>
-          <p style={{ margin: 0, color: "var(--ink-2)" }}>
-            This is where your AI call would run and return insights about the image you dropped the orb on.
-          </p>
-          {modal.img && (
-            <div style={{ border: "1px solid var(--stroke-2)" }}>
-              <img src={modal.img} alt="Analyzed" />
-            </div>
-          )}
-        </div>
-      </Modal>
+      {/* background */}
+      <div className="bg-grid" />
+
+      {/* brand hotspot (use your pink supernova asset if available) */}
+      <div id="brand-hotspot" className="brand-hotspot">
+        {/* If you have /supernova.png in public/, it will show; gradient is fallback */}
+        <img src="/supernova.png" alt="" onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display="none"; }} />
+      </div>
+
+      {mode === "feed" ? (
+        <Feed posts={posts} me={me} onEnterWorld={() => setMode("world")} onOpenProfile={(id) => console.log("open profile:", id)} />
+      ) : (
+        <WorldScreen onBack={() => setMode("feed")} />
+      )}
+
+      {/* square, draggable AI orb; opens menu when overlapping brand */}
+      <AssistantOrb brandTargetId="brand-hotspot" onEnterUniverse={() => setMode("world")} />
     </>
   );
 }
