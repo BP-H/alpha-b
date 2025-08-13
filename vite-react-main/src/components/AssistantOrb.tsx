@@ -16,6 +16,7 @@ export default function AssistantOrb() {
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
   const hold = useRef<number|null>(null);
+  const startXY = useRef<XY|null>(null);
 
   const { start, stop, supported } = useSpeech(async (text) => {
     bus.emit("chat:add", { role: "user", text });
@@ -42,17 +43,27 @@ export default function AssistantOrb() {
   };
 
   const onDown = (e: React.PointerEvent) => {
+    startXY.current = { x: e.clientX, y: e.clientY };
     (e.target as Element).setPointerCapture(e.pointerId);
     setDragging(true);
     hold.current = window.setTimeout(()=> setListening(true), 650);
   };
   const onMove = (e: React.PointerEvent) => {
     if (!dragging) return;
-    if (hold.current) { clearTimeout(hold.current); hold.current = null; }
+    if (hold.current && startXY.current) {
+      const dx = e.clientX - startXY.current.x;
+      const dy = e.clientY - startXY.current.y;
+      if (Math.sqrt(dx*dx + dy*dy) > 8) {
+        clearTimeout(hold.current); hold.current = null;
+      } else {
+        return;
+      }
+    }
     setPos(clamp(e.clientX - 32, e.clientY - 32));
   };
   const onUp = (e: React.PointerEvent) => {
     (e.target as Element).releasePointerCapture(e.pointerId);
+    startXY.current = null;
     setDragging(false);
     if (hold.current) { clearTimeout(hold.current); hold.current = null; }
     if (listening) setListening(false);
