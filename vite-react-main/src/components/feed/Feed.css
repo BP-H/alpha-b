@@ -1,11 +1,2 @@
-/* Feed-only overrides (kept tiny). For more space between images, raise --img-gap. */
-:root { --img-gap: 16px; }
-
-/* Safety in case styles.css changes */
-.post-media { display: grid; gap: var(--img-gap); }
-.post-media.one { grid-template-columns: 1fr; }
-.post-media.two { grid-template-columns: 1fr 1fr; }
-
-@media (min-width: 1024px) {
-  :root { --img-gap: 12px; } /* slightly tighter on desktop */
-}
+/* Tiny file — most rules live in styles.css */
+:root{ --post-gap:12px; }
