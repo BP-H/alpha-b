@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import "./AssistantOrb.css";
 
 type XY = { x:number; y:number };
 
 export default function AssistantOrb() {
-  const ref = useRef<HTMLButtonElement|null>(null);
+  const ref = useRef<HTMLDivElement|null>(null);
   const [pos, setPos] = useState<XY>(() => {
     try { const s = localStorage.getItem("orb-pos"); if (s) return JSON.parse(s); } catch {}
     const w = typeof window !== "undefined" ? window.innerWidth : 390;
     const h = typeof window !== "undefined" ? window.innerHeight : 844;
-    return { x: w - 84, y: h - 84 }; // bottom-right
+    return { x: w - 84, y: h - 84 }; // bottom-right spawn
   });
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
@@ -17,7 +16,7 @@ export default function AssistantOrb() {
 
   useEffect(() => {
     localStorage.setItem("orb-pos", JSON.stringify(pos));
-    if (ref.current) ref.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+    if (ref.current) ref.current.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
   }, [pos]);
 
   const clamp = (x:number, y:number) => {
@@ -43,16 +42,16 @@ export default function AssistantOrb() {
   };
 
   return (
-    <button
+    <div
       ref={ref}
-      className={`orb ${dragging ? "dragging": ""} ${listening ? "listening": ""}`}
+      className={`ai-orb ${listening ? "listening" : ""}`}
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
-      aria-label="Assistant"
-      style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+      role="button" aria-label="Assistant orb"
+      style={{ transform:`translate(${pos.x}px, ${pos.y}px)` }}
     >
-      <span className="orb-core" />
-      <span className="orb-sheen" />
-      {listening && <span className="orb-pulse" aria-hidden="true" />}
-    </button>
+      <div className="core" />
+      <div className="swirl" />
+      <div className="spec" />
+    </div>
   );
 }
