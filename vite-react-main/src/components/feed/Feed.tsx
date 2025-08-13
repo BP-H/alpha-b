@@ -1,168 +1,147 @@
-// src/components/feed/Feed.tsx
+import { useState } from "react";
 import { Post } from "../../types";
+import "./Feed.css";
 
 export default function Feed({ onPortal }: { onPortal?: (p: Post, at?: { x: number; y: number }) => void }) {
   const posts: Post[] = [
     { 
       id: 1, 
       author: "@proto_ai", 
-      title: "Ocean Study", 
-      image: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2400"
+      title: "Ocean Study",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1200&auto=format&fit=crop"
     },
     { 
       id: 2, 
       author: "@eva", 
-      title: "Neon Dreams", 
-      image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2400"
+      title: "Neon Dreams",
+      image: "https://images.unsplash.com/photo-1454391304352-2bf4678b1a7a?q=80&w=1200&auto=format&fit=crop"
     },
     {
       id: 3,
       author: "@forest_bot",
       title: "Low-poly Tree",
-      image: "https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=2400"
+      image: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=1200&auto=format&fit=crop"
     }
   ];
 
   return (
-    <div style={{ 
-      width: "100%", 
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #0f1117, #10131a)",
-      padding: "20px 0"
-    }}>
-      {/* Debug header */}
-      <div style={{ 
-        padding: "20px", 
-        background: "rgba(255,75,208,0.2)", 
-        margin: "0 0 20px 0",
-        textAlign: "center"
-      }}>
-        <h1 style={{ color: "#fff", margin: 0 }}>Feed is Working! ✨</h1>
-        <p style={{ color: "#ff74de", margin: "10px 0 0" }}>SuperNova_2177</p>
+    <div className="feed-stream">
+      {posts.map((post, index) => (
+        <PostCard key={post.id} post={post} onPortal={onPortal} isFirst={index === 0} />
+      ))}
+    </div>
+  );
+}
+
+function PostCard({ post, onPortal, isFirst }: { post: Post; onPortal?: any; isFirst: boolean }) {
+  const [drawer, setDrawer] = useState<string>("");
+
+  const reactions = ["😍","🔥","✨","🚀","💎","🌟","💜","🎯","⚡","🌈","🦄","💫","🪐","🌙","☄️","💥","🌊","🏔️","🌸","🦋"];
+  
+  return (
+    <article className={`post ${isFirst ? 'first' : ''}`}>
+      {/* Top glass bar - only if not first post */}
+      {!isFirst && (
+        <div className="post-glass-top">
+          <div className="post-avatar-ring">
+            <div className="post-avatar" />
+          </div>
+          <div className="post-meta">
+            <div className="post-author">{post.author}</div>
+            <div className="post-time">now · #superNova</div>
+          </div>
+          <div className="post-title-chip">{post.title}</div>
+        </div>
+      )}
+
+      {/* Vertical image */}
+      <div className="post-image">
+        <img src={post.image} alt={post.title} loading="lazy" />
       </div>
 
-      {posts.map((post) => (
-        <article 
-          key={post.id} 
-          style={{
-            position: "relative",
-            width: "100%",
-            marginBottom: "4px",
-            background: "#0f1117",
-            overflow: "hidden"
+      {/* Bottom glass bar */}
+      <div className="post-glass-bottom">
+        <button 
+          className="post-action post-profile"
+          onClick={() => setDrawer(drawer === "profile" ? "" : "profile")}
+        >
+          <div className="post-avatar-mini" />
+        </button>
+        
+        <button 
+          className="post-action"
+          onClick={() => setDrawer(drawer === "react" ? "" : "react")}
+        >
+          <span className="post-icon">♥</span>
+        </button>
+        
+        <button 
+          className="post-action"
+          onClick={() => setDrawer(drawer === "comment" ? "" : "comment")}
+        >
+          <span className="post-icon">💬</span>
+        </button>
+        
+        <button 
+          className="post-action"
+          onClick={() => setDrawer(drawer === "remix" ? "" : "remix")}
+        >
+          <span className="post-icon">🔄</span>
+        </button>
+        
+        <button 
+          className="post-action post-portal"
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            onPortal?.(post, { x: rect.left + rect.width/2, y: rect.top + rect.height/2 });
           }}
         >
-          {/* Image */}
-          <div style={{ position: "relative", width: "100%", height: "500px" }}>
-            <img 
-              src={post.image} 
-              alt={post.title}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = 'none';
-                if (target.parentElement) {
-                  target.parentElement.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
-                }
-              }}
-            />
-            
-            {/* Top glass bar */}
-            <div style={{
-              position: "absolute",
-              top: "12px",
-              left: "12px",
-              right: "12px",
-              padding: "12px",
-              background: "rgba(18,22,35,0.7)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderRadius: "16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px"
-            }}>
-              <div style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #fff, #ff74de, #ff4bd0)"
-              }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#fff", fontWeight: "bold" }}>{post.author}</div>
-                <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px" }}>now · #superNova</div>
-              </div>
-              <div style={{
-                padding: "6px 12px",
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: "999px",
-                color: "#fff",
-                fontSize: "14px",
-                fontWeight: "bold"
-              }}>
-                {post.title}
-              </div>
-            </div>
+          <span className="post-icon">✦</span>
+        </button>
+      </div>
 
-            {/* Bottom action bar */}
-            <div style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "12px",
-              right: "12px",
-              padding: "8px",
-              background: "rgba(18,22,35,0.7)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderRadius: "16px",
-              display: "flex",
-              justifyContent: "space-around"
-            }}>
-              {[
-                { icon: "❤️", label: "Like" },
-                { icon: "💬", label: "Comment" },
-                { icon: "✨", label: "Portal" },
-                { icon: "🔄", label: "Share" },
-                { icon: "🔖", label: "Save" }
-              ].map((btn, i) => (
-                <button
-                  key={i}
-                  onClick={(e) => {
-                    if (i === 2) { // Portal button
-                      console.log("Portal clicked for:", post.title);
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      onPortal?.(post, { 
-                        x: rect.left + rect.width/2, 
-                        y: rect.top + rect.height/2 
-                      });
-                    }
-                  }}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "12px",
-                    border: i === 2 ? "1px solid #ff74de" : "1px solid rgba(255,255,255,0.2)",
-                    background: i === 2 ? "rgba(255,75,208,0.3)" : "rgba(20,22,34,0.7)",
-                    color: "#fff",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                    display: "grid",
-                    placeItems: "center",
-                    transition: "all 0.2s"
-                  }}
-                  title={btn.label}
-                >
-                  {btn.icon}
-                </button>
+      {/* Expanding drawer */}
+      <div className={`post-drawer ${drawer ? 'open' : ''}`}>
+        {drawer === "profile" && (
+          <div className="drawer-content">
+            <div className="drawer-chips">
+              <span>View Profile</span>
+              <span>Follow</span>
+              <span>Message</span>
+              <span>Company A</span>
+              <span>Company B</span>
+            </div>
+          </div>
+        )}
+        {drawer === "react" && (
+          <div className="drawer-content">
+            <div className="drawer-emojis">
+              {reactions.map((emoji, i) => (
+                <button key={i} className="emoji-btn">{emoji}</button>
               ))}
             </div>
           </div>
-        </article>
-      ))}
-    </div>
+        )}
+        {drawer === "comment" && (
+          <div className="drawer-content">
+            <input 
+              className="comment-input" 
+              placeholder="Write a comment..." 
+              autoFocus
+            />
+          </div>
+        )}
+        {drawer === "remix" && (
+          <div className="drawer-content">
+            <div className="drawer-chips">
+              <span>Remix Style</span>
+              <span>Copy Link</span>
+              <span>Create Version</span>
+              <span>Share to...</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
