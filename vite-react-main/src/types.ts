@@ -7,11 +7,11 @@ export type ImageAsset = {
 export type Post = {
   id: string;
   author: string;
-  authorAvatar: string;
+  authorAvatar: string; // avatar for the poster (top-left of card)
   title?: string;
   subtitle?: string;
-  images: ImageAsset[];
   time: string;
+  images: ImageAsset[]; // use images[], not image
 };
 
 export type User = {
