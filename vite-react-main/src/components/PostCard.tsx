@@ -5,22 +5,20 @@ type Props = {
   post: Post;
   me: User;
   onOpenProfile?: (id: string) => void;
-  onEnterWorld?: () => void; // matches Feed -> PostCard wiring
+  onEnterWorld?: () => void;
 };
 
 export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Props) {
   const [open, setOpen] = useState(false);
 
-  // Resolve first image URL safely (string | ImageAsset)
+  // Resolve first image URL (supports string or {url})
   const first = post.images?.[0] as any;
-  const imgUrl: string =
-    typeof first === "string" ? first : first?.url ?? "";
-  const imgAlt: string =
-    typeof first === "object" && first?.alt ? first.alt : (post.title ?? "");
+  const imgUrl: string = typeof first === "string" ? first : first?.url ?? "";
+  const imgAlt: string = typeof first === "object" && first?.alt ? first.alt : (post.title ?? "");
 
   return (
     <article className="post" aria-label={post.title ?? post.author}>
-      {/* Frosted TOP stripe */}
+      {/* Frost TOP */}
       <div className="frost frost-top">
         <button
           className="avatar-circle"
@@ -35,12 +33,13 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
         {post.title && <span className="chip">{post.title}</span>}
       </div>
 
-      {/* Image */}
-      <div className="post-media">
-        <img src={imgUrl} alt={imgAlt} loading="lazy" decoding="async" />
+      {/* Media block — background shows even if external image is slow */}
+      <div className="post-media" style={{ backgroundImage: imgUrl ? `url(${imgUrl})` : undefined }}>
+        {/* keep an <img> for a11y / long-press saving etc. */}
+        {imgUrl && <img src={imgUrl} alt={imgAlt} loading="lazy" decoding="async" />}
       </div>
 
-      {/* Frosted BOTTOM stripe */}
+      {/* Frost BOTTOM */}
       <div className="frost frost-bottom">
         <button
           className="me-circle"
@@ -55,7 +54,6 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
         </div>
       </div>
 
-      {/* Example drawer */}
       <div className={`drawer ${open ? "open" : ""}`}>engagement drawer…</div>
     </article>
   );
