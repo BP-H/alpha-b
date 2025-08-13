@@ -1,43 +1,56 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import "./styles.css";
-
-import { avatar, photo } from "./lib/placeholders";
 import { Post, User } from "./types";
+import { avatar } from "./lib/placeholders";
 import Feed from "./components/feed/Feed";
 import AssistantOrb from "./components/AssistantOrb";
-import WorldScreen from "./components/WorldScreen";
+import BrandBadge from "./components/BrandBadge";
+import World3D from "./components/World3D"; // your existing 3D scene
+
+// Fake image stream (looks real). Add as many as you want.
+const IMG = (id:number)=>`https://picsum.photos/id/${id}/1080/1350`;
+const seedIds = [1015,1069,1025,1027,1043,1050,106,237,1005,1003,1002,1001,1021,1024,1032,1035,1037,1040,1041,1042,1044,1045,1049,1051,1055,1056,1059,1063,1067,1070];
 
 const me: User = { id: "me", name: "You", avatar: avatar("You") };
 
-const postsSeed: Post[] = [
-  { id: "p1", author: "Elena R.", authorAvatar: avatar("Elena R"), title: "Travel", time: "4h · Edited", images: [{ id: "a", url: photo(1080,1350) }] },
-  { id: "p2", author: "Expanso", authorAvatar: avatar("Expanso"), title: "Ad", time: "Sponsored", images: [{ id: "b", url: photo(1080,1350) }] },
-  { id: "p3", author: "Lola", authorAvatar: avatar("Lola"), time: "2h", images: [{ id: "c", url: photo(1080,1350) }] },
-];
-
 export default function App() {
   const [mode, setMode] = useState<"feed"|"world">("feed");
-  const [posts] = useState<Post[]>(postsSeed);
+
+  const posts: Post[] = useMemo(() =>
+    seedIds.map((id, i) => ({
+      id: `p${i}`,
+      author: i % 3 === 0 ? "Elena R." : i % 3 === 1 ? "Expanso" : "Lola",
+      authorAvatar: avatar(`${i}`),
+      title: i % 5 === 0 ? "Travel" : undefined,
+      time: `${(i%8)+1}h`,
+      images: [{ id: `i${i}`, url: IMG(id) }],
+    })), []
+  );
 
   return (
     <>
-      {/* background */}
-      <div className="bg-grid" />
+      {/* 3D world as true background */}
+      <div className="world-layer"><World3D /></div>
 
-      {/* brand hotspot (use your pink supernova asset if available) */}
-      <div id="brand-hotspot" className="brand-hotspot">
-        {/* If you have /supernova.png in public/, it will show; gradient is fallback */}
-        <img src="/supernova.png" alt="" onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display="none"; }} />
-      </div>
+      {/* Brand (top-left) */}
+      <BrandBadge onEnterUniverse={() => setMode("world")} />
 
+      {/* Feed on top (mobile-only) or World overlay */}
       {mode === "feed" ? (
-        <Feed posts={posts} me={me} onEnterWorld={() => setMode("world")} onOpenProfile={(id) => console.log("open profile:", id)} />
+        <Feed posts={posts} me={me} onEnterWorld={() => setMode("world")} onOpenProfile={(id) => console.log("profile", id)} />
       ) : (
-        <WorldScreen onBack={() => setMode("feed")} />
+        <div style={{ position:"fixed", inset:0, zIndex:10 }}>
+          <World3D />
+          <button
+            onClick={() => setMode("feed")}
+            style={{ position:"fixed", left:12, top:12, zIndex:11, height:40, padding:"0 12px",
+              border:"1px solid rgba(255,255,255,.12)", background:"rgba(14,16,22,.8)", color:"#fff" }}
+          >Back</button>
+        </div>
       )}
 
-      {/* square, draggable AI orb; opens menu when overlapping brand */}
-      <AssistantOrb brandTargetId="brand-hotspot" onEnterUniverse={() => setMode("world")} />
+      {/* Orb (bottom-right spawn, draggable, stays) */}
+      <AssistantOrb />
     </>
   );
 }
