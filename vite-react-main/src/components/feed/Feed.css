@@ -1,173 +1,98 @@
-/* This is the main scrollable area for the feed */
-.feed-scroll-container {
-  flex: 1; /* Takes up remaining space next to sidebar */
-  height: 100vh;
-  overflow-y: auto; /* CRITICAL: This enables scrolling */
-  -webkit-overflow-scrolling: touch;
+import { useState } from "react";
+import { Post } from "../../types";
+import "./Feed.css";
+
+// MAIN FEED COMPONENT
+export default function Feed({ onPortal }: { onPortal?: (p: Post, at?: { x: number; y: number }) => void }) {
+  const posts: Post[] = [
+    {
+      id: 1,
+      author: "@eva",
+      avatar: "/avatars/eva.png", // Corrected from avatarUrl
+      title: "Neon Dreams",
+      image: "https://images.unsplash.com/photo-1534488972529-a1b2eda4e893?q=80&w=1887&auto=format&fit=crop",
+    },
+    {
+      id: 2,
+      author: "@proto_ai",
+      avatar: "/avatars/proto.png", // Corrected from avatarUrl
+      title: "Cloud Architecture",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1200&auto=format&fit=crop",
+    },
+    {
+      id: 3,
+      author: "@forest_bot",
+      avatar: "/avatars/forest.png", // Corrected from avatarUrl
+      title: "Alpine Ascent",
+      image: "https://images.unsplash.com/photo-1454391304352-2bf4678b1a7a?q=80&w=1200&auto=format&fit=crop",
+    }
+  ];
+
+  return (
+    // This container handles the scrolling
+    <div className="feed-scroll-container">
+      <main className="feed-content">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} onPortal={onPortal} />
+        ))}
+      </main>
+    </div>
+  );
 }
 
-/* This centers the feed content and sets its max width */
-.feed-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px; /* The main gap between each post card */
-  padding: 80px 24px 24px 24px; /* Top padding for menu bar, other padding for spacing */
-  max-width: 600px;
-  margin: 0 auto;
-}
+// INDIVIDUAL POST CARD
+function PostCard({ post, onPortal }: { post: Post; onPortal?: any; }) {
+  const [drawer, setDrawer] = useState<string>("");
+  const reactions = ["😍", "🔥", "✨", "🚀", "💎", "🌟", "💜", "🎯", "⚡", "🌈"];
 
-/* Individual Post Card - now a flex container with a transparent background */
-.post {
-  display: flex;
-  flex-direction: column;
-  gap: 4px; /* The small gap between bars and image, shows 3D background */
-  width: 100%;
-  background: transparent;
-}
+  return (
+    <article className="post">
+      {/* Top Bar (Separate Element) */}
+      <div className="post-bar top">
+        <div className="post-author-avatar" />
+        <div className="post-meta">
+          <div className="post-author">{post.author}</div>
+          <div className="post-time">now · #superNova</div>
+        </div>
+        <div className="post-title-chip">{post.title}</div>
+      </div>
 
-/* The bars are now flex items, not absolutely positioned */
-.post-bar {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(18, 20, 32, 0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px; /* Beautiful rounded corners */
-}
+      {/* Vertical image */}
+      <div className="post-image-container">
+        <img src={post.image} alt={post.title} loading="lazy" />
+      </div>
 
-.post-bar.top {
-  gap: 12px;
-}
+      {/* Bottom Bar (Separate Element) */}
+      <div className="post-bar bottom">
+        <button className="post-action-btn" onClick={() => setDrawer(drawer === "react" ? "" : "react")}>♥</button>
+        <button className="post-action-btn" onClick={() => setDrawer(drawer === "comment" ? "" : "comment")}>💬</button>
+        <button className="post-action-btn" onClick={() => setDrawer(drawer === "remix" ? "" : "remix")}>🔄</button>
+        <button className="post-action-btn primary" onClick={(e: any) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          onPortal?.(post, { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        }}>
+          ✦
+        </button>
+      </div>
 
-.post-bar.bottom {
-  justify-content: space-around;
-  padding: 8px 16px;
-}
-
-.post-author-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, #fff, #ff74de, #ff4bd0);
-}
-
-.post-meta {
-  flex: 1;
-  min-width: 0;
-}
-.post-author {
-  font-weight: 600;
-  color: #fff;
-}
-.post-time {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.post-title-chip {
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* The container for the image, allows for rounded corners */
-.post-image-container {
-  width: 100%;
-  aspect-ratio: 9 / 12;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-
-.post-image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Action Buttons */
-.post-action-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 20px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
-}
-.post-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.post-action-btn:active {
-  transform: scale(0.9);
-}
-.post-action-btn.primary {
-  background: rgba(255, 75, 208, 0.2);
-  color: #ffc8ee;
-}
-
-/* Action Drawer */
-.post-drawer {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  background: rgba(22, 25, 38, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  margin-top: -14px; /* Overlap the bottom bar slightly */
-  padding-top: 14px;
-}
-.post-drawer.open {
-  max-height: 150px;
-}
-.drawer-content {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-.emoji-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.emoji-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.emoji-btn:hover {
-  transform: scale(1.3);
-}
-.comment-input {
-  width: 100%;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
-  padding: 12px;
-  border-radius: 12px;
-  outline: none;
-}
-.chip-grid {
-  display: flex;
-  gap: 8px;
-}
-.chip-grid span {
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 8px;
-  cursor: pointer;
+      {/* Expanding drawer for actions */}
+      <div className={`post-drawer ${drawer ? 'open' : ''}`}>
+        {drawer === "react" && (
+          <div className="drawer-content emoji-grid">
+            {reactions.map((emoji) => <button key={emoji} className="emoji-btn">{emoji}</button>)}
+          </div>
+        )}
+        {drawer === "comment" && (
+          <div className="drawer-content">
+            <input className="comment-input" placeholder="Add a comment..." autoFocus />
+          </div>
+        )}
+        {drawer === "remix" && (
+          <div className="drawer-content chip-grid">
+            <span>Remix Style</span><span>Copy Link</span><span>Share</span>
+          </div>
+        )}
+      </div>
+    </article>
+  );
 }
