@@ -11,9 +11,13 @@ export default function BrandBadge({ onEnterUniverse }: { onEnterUniverse: () =>
           className="brand-dot"
           aria-label="superNova2177"
           onClick={() => setOpen(o => !o)}
-          onDoubleClick={() => bus.emit("sidebar:toggle")}  /* double-tap can fan out the big sidebar */
+          onDoubleClick={() => bus.emit("sidebar:toggle", undefined)} /* bus.emit expects (event, payload) */
         >
-          <img src="/supernova.png" alt="" onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display='none'; }} />
+          <img
+            src="/supernova.png"
+            alt=""
+            onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display='none'; }}
+          />
         </button>
         <div className="brand-label">superNova2177</div>
       </div>
