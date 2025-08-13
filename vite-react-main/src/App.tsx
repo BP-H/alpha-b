@@ -1,85 +1,74 @@
-// src/App.tsx
-import { lazy, Suspense, useCallback, useState } from "react";
-import "./styles.css";
-import Shell from "./components/Shell";
-import AssistantOrb from "./components/AssistantOrb";
-import Feed from "./components/feed/Feed";
-import { Post } from "./types";
-import ChatDock from "./components/ChatDock";
+import { useState } from "react";
+import Feed from "./components/Feed";
+import Modal from "./components/Modal";
+import PortalOrb from "./components/PortalOrb";
+import { Post, User } from "./types";
+import { avatar, photo } from "./lib/placeholders";
 
-// Lazy-loaded 3D components for performance
-const BackgroundVoid = lazy(() => import("./three/BackgroundVoid"));
-const World3D = lazy(() => import("./components/World3D"));
-
-/**
- * A default post object to use when entering a world from a non-post source,
- * like the Assistant Orb.
- */
-const defaultWorldPost: Post = {
-  id: "nexus-world",
-  title: "Nexus",
-  author: "System",
-  image: "/images/default_world.jpg", // A generic fallback image
+const me: User = {
+  id: "me",
+  name: "You",
+  avatar: avatar("You"),
 };
 
-/**
- * The main application component. It orchestrates the entire UI,
- * managing the state between the 2D feed and the 3D world view.
- */
+const seedPosts: Post[] = [
+  {
+    id: "p1",
+    author: "Elena R.",
+    authorAvatar: avatar("Elena R"),
+    title: "Travel",
+    subtitle: "Monaco",
+    time: "4h · Edited",
+    images: [
+      { id: "i1", url: photo("AIRPORT • 4:5", 1200, 1500) },
+      { id: "i2", url: photo("SEA • 4:5", 1200, 1500) },
+    ],
+  },
+  {
+    id: "p2",
+    author: "Expanso",
+    authorAvatar: avatar("Expanso"),
+    title: "Ad",
+    subtitle: "Promoted",
+    time: "Sponsored",
+    images: [{ id: "i1", url: photo("SLOW DATA ANALYSIS • 16:9", 1600, 900) }],
+  },
+];
+
 export default function App() {
-  // State to toggle between the 'feed' and the immersive 'world' view
-  const [mode, setMode] = useState<"feed" | "world">("feed");
-  // State to hold the data of the post that the user wants to enter
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [posts] = useState<Post[]>(seedPosts);
+  const [modal, setModal] = useState<{ open: boolean; img?: string }>({
+    open: false,
+  });
 
-  /**
-   * Callback function to transition from the feed to the 3D world.
-   * This will be passed down to the Feed component.
-   */
-  const enterWorld = useCallback((post: Post) => {
-    console.log("Entering world for post:", post.title);
-    setSelectedPost(post);
-    setMode("world");
-  }, []);
-
-  /**
-   * Callback function to transition from the 3D world back to the feed.
-   */
-  const leaveWorld = useCallback(() => {
-    console.log("Leaving world and returning to feed.");
-    setSelectedPost(null);
-    setMode("feed");
-  }, []);
+  function handleAnalyzeImage(imgUrl: string) {
+    setModal({ open: true, img: imgUrl });
+  }
 
   return (
-    <div className="app-container">
-      {/* Layer 1: The 3D background, which is always rendered */}
-      <Suspense fallback={null}>
-        <div className="background-canvas">
-          <BackgroundVoid />
+    <>
+      <Feed posts={posts} me={me} onOpenProfile={(id) => console.log(id)} />
+
+      <PortalOrb onAnalyzeImage={handleAnalyzeImage} />
+
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title="Assistant"
+      >
+        <div style={{ display: "grid", gap: 12 }}>
+          <div className="chip">Demo</div>
+          <p style={{ margin: 0, color: "var(--ink-2)" }}>
+            This is where your AI call would run (OpenAI, etc.). I received the
+            image under the orb and would return insights/description/tags.
+          </p>
+          {modal.img && (
+            <div style={{ border: "1px solid var(--stroke-2)" }}>
+              <img src={modal.img} alt="Analyzed" />
+            </div>
+          )}
         </div>
-      </Suspense>
-
-      {/* Layer 2: The main content, which is either the Feed or the 3D World */}
-      <div className="main-content-layer">
-        {mode === "feed" ? (
-          <Feed onPortal={enterWorld} />
-        ) : (
-          <Suspense fallback={<div className="loading-placeholder">Loading World...</div>}>
-            <World3D selected={selectedPost} onBack={leaveWorld} />
-          </Suspense>
-        )}
-      </div>
-
-      {/* Layer 3: Floating UI elements that render on top of everything */}
-      {mode === "feed" && (
-        <>
-          <Shell />
-          {/* CORRECTED: The 'onPortal' prop is now provided to AssistantOrb */}
-          <AssistantOrb onPortal={() => enterWorld(defaultWorldPost)} />
-          <ChatDock />
-        </>
-      )}
-    </div>
+      </Modal>
+    </>
   );
 }
