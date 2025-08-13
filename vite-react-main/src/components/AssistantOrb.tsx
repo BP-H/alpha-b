@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import bus from "../lib/bus";
+import useSpeech from "../lib/useSpeech";
+import { assistantReply } from "../lib/api";
 
 type XY = { x:number; y:number };
 
@@ -13,6 +16,20 @@ export default function AssistantOrb() {
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
   const hold = useRef<number|null>(null);
+
+  const { start, stop, supported } = useSpeech(async (text) => {
+    bus.emit("chat:add", { role: "user", text });
+    try {
+      const r = await assistantReply(text);
+      if (r && r.ok && r.text) {
+        bus.emit("chat:add", { role: "assistant", text: r.text });
+      } else {
+        bus.emit("chat:add", { role: "assistant", text: (r && r.error) || "" });
+      }
+    } catch {
+      bus.emit("chat:add", { role: "assistant", text: "error" });
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem("orb-pos", JSON.stringify(pos));
@@ -40,6 +57,11 @@ export default function AssistantOrb() {
     if (hold.current) { clearTimeout(hold.current); hold.current = null; }
     if (listening) setListening(false);
   };
+
+  useEffect(() => {
+    if (!supported) return;
+    if (listening) start(); else stop();
+  }, [listening, start, stop, supported]);
 
   return (
     <div
