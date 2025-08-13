@@ -12,6 +12,17 @@ const BackgroundVoid = lazy(() => import("./three/BackgroundVoid"));
 const World3D = lazy(() => import("./components/World3D"));
 
 /**
+ * A default post object to use when entering a world from a non-post source,
+ * like the Assistant Orb.
+ */
+const defaultWorldPost: Post = {
+  id: "nexus-world",
+  title: "Nexus",
+  author: "System",
+  image: "/images/default_world.jpg", // A generic fallback image
+};
+
+/**
  * The main application component. It orchestrates the entire UI,
  * managing the state between the 2D feed and the 3D world view.
  */
@@ -28,7 +39,6 @@ export default function App() {
   const enterWorld = useCallback((post: Post) => {
     console.log("Entering world for post:", post.title);
     setSelectedPost(post);
-    // Here you could add a transition animation before changing the mode
     setMode("world");
   }, []);
 
@@ -65,7 +75,8 @@ export default function App() {
       {mode === "feed" && (
         <>
           <Shell />
-          <AssistantOrb />
+          {/* CORRECTED: The 'onPortal' prop is now provided to AssistantOrb */}
+          <AssistantOrb onPortal={() => enterWorld(defaultWorldPost)} />
           <ChatDock />
         </>
       )}
