@@ -4,6 +4,7 @@ import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
 import PostCard from "./PostCard";
 import AssistantOrb from "./AssistantOrb";
+import ChatDock from "./ChatDock";
 import World3D from "./World3D";
 
 const IMG = (id: number) => `https://picsum.photos/id/${id}/1080/1350`;
@@ -61,6 +62,7 @@ export default function Shell() {
 
       {/* Floating orb (bottom-right) */}
       <AssistantOrb />
+      <ChatDock />
     </>
   );
 }
