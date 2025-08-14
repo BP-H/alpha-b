@@ -1,12 +1,14 @@
-import { useMemo, useEffect } from "react";
-import "./Shell.css";
+// src/components/Shell.tsx
+import { useEffect, useMemo } from "react";
 import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
 import AssistantOrb from "./AssistantOrb";
-import World3D from "./World3D";
-import Feed from "./feed/Feed"; // ← correct path
+import ChatDock from "./ChatDock"; // <- Remove if App.tsx already renders ChatDock
+import Feed from "./feed/Feed";
 import { useFeedStore } from "../lib/feedStore";
+import bus from "../lib/bus";
 
+// quick demo images
 const IMG = (id: number) => `https://picsum.photos/id/${id}/1080/1350`;
 const SEED = [
   1015,1069,1025,1027,1043,1050,106,237,1005,1003,1002,1001,
@@ -14,7 +16,13 @@ const SEED = [
   1055,1056,1059,1063,1067,1070,
 ];
 
-export default function Shell() {
+export default function Shell({
+  onPortal,
+  hideOrb = false,
+}: {
+  onPortal: (post: Post, at: { x: number; y: number }) => void;
+  hideOrb?: boolean;
+}) {
   const avatar = (i: number) => `https://i.pravatar.cc/100?img=${(i % 70) + 1}`;
   const me: User = { id: "me", name: "You", avatar: avatar(99) };
 
@@ -31,34 +39,37 @@ export default function Shell() {
     []
   );
 
+  // store posts once for the virtualized feed
   const setPosts = useFeedStore((s) => s.setPosts);
-  useEffect(() => {
-    setPosts(posts);
-  }, [posts, setPosts]);
+  useEffect(() => { setPosts(posts); }, [posts, setPosts]);
 
-  const onEnterWorld = () => {
-    console.log("Enter Universe");
+  // fallback "Enter Universe" click from cards (when no hover coords available)
+  const fromFeedEnter = () => {
+    const at = { x: window.innerWidth - 56, y: window.innerHeight - 56 };
+    const post: Post = posts[0];
+    // Ask the orb to animate and portal
+    bus.emit("orb:portal", { post, x: at.x, y: at.y });
   };
 
   return (
     <>
-      {/* 3D background */}
-      <div className="world-layer">
-        <World3D selected={null} onBack={() => {}} />
-      </div>
-
       {/* Top-left brand */}
-      <BrandBadge onEnterUniverse={onEnterWorld} />
+      <BrandBadge onEnterUniverse={fromFeedEnter} />
 
-      {/* Virtualized feed */}
-      <Feed
-        me={me}
-        onOpenProfile={(id) => console.log("profile:", id)}
-        onEnterWorld={onEnterWorld}
-      />
+      {/* Feed */}
+      <main className="content-viewport feed-wrap">
+        <Feed
+          me={me}
+          onOpenProfile={(id) => console.log("profile:", id)}
+          onEnterWorld={fromFeedEnter}
+        />
+      </main>
 
-      {/* Floating orb (bottom-right) */}
-      <AssistantOrb />
+      {/* The Assistant orb (voice + portal) */}
+      <AssistantOrb onPortal={onPortal} hidden={hideOrb} />
+
+      {/* If App.tsx already renders ChatDock, remove the line below */}
+      <ChatDock />
     </>
   );
 }
