@@ -15,10 +15,10 @@ const SEED = [
 ];
 
 export default function Shell({
-  onPortal = () => {},     // <-- safe default
+  onPortal = () => {},
   hideOrb = false,
 }: {
-  onPortal?: (post: Post, at: { x: number; y: number }) => void;  // <-- now optional
+  onPortal?: (post: Post, at: { x: number; y: number }) => void; // optional, safe default
   hideOrb?: boolean;
 }) {
   const avatar = (i: number) => `https://i.pravatar.cc/100?img=${(i % 70) + 1}`;
@@ -37,18 +37,16 @@ export default function Shell({
     []
   );
 
-  // publish to virtualized feed
   const setPosts = useFeedStore((s) => s.setPosts);
   useEffect(() => { setPosts(posts); }, [posts, setPosts]);
 
-  // helper to open the portal from the dock location
   const enterFromFeed = (post?: Post, at?: { x: number; y: number }) => {
     const p = post ?? posts[0];
     const target = {
       x: at?.x ?? window.innerWidth - 56,
       y: at?.y ?? window.innerHeight - 56,
     };
-    // fly the orb (AssistantOrb listens for this)
+    // animate orb → world; AssistantOrb listens and calls onPortal
     bus.emit("orb:portal", { post: p, x: target.x, y: target.y });
   };
 
@@ -66,7 +64,7 @@ export default function Shell({
         />
       </main>
 
-      {/* orb — MUST receive onPortal (safe default above prevents crashes) */}
+      {/* voice orb */}
       <AssistantOrb onPortal={onPortal} hidden={hideOrb} />
     </>
   );
