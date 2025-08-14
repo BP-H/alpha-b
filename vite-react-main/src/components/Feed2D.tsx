@@ -49,7 +49,14 @@ function FeedCard({ post, onEnterWorld }: { post: any; onEnterWorld: (p: any, at
   return (
     <article className="nv-card" role="article" aria-label={post.title}>
       <div className="nv-media">
-        <img src={post.img} alt={post.title} loading="lazy" decoding="async" />
+        <img
+          src={post.img}
+          alt={post.title}
+          width={800}
+          height={1000}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
 
       {/* Glass plaque (top, centered) */}

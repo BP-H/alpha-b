@@ -16,6 +16,10 @@ export default function BrandBadge({ onEnterUniverse }: { onEnterUniverse: () =>
           <img
             src="/supernova.png"
             alt="Supernova 2177 logo"
+            width={40}
+            height={40}
+            loading="lazy"
+            decoding="async"
             onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display='none'; }}
           />
         </button>
