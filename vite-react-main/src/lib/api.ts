@@ -5,7 +5,7 @@ export async function assistantReply(prompt: string): Promise<{ ok: boolean; tex
     const r = await fetch("/api/assistant-reply", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ apiKey, prompt }),
+      body: JSON.stringify({ apiKey, prompt }), // <— 'prompt' shape
     });
     const j = await r.json().catch(() => ({}));
     return j?.ok ? { ok: true, text: j.text || "" } : { ok: false, error: j?.error || "Failed" };
