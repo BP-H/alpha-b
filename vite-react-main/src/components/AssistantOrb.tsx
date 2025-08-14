@@ -83,10 +83,10 @@ async function ensureMicPermission(): Promise<boolean> {
 }
 
 export default function AssistantOrb({
-  onPortal,
+  onPortal = () => {},
   hidden = false,
 }: {
-  onPortal: (post: Post, at: { x: number; y: number }) => void;
+  onPortal?: (post: Post, at: { x: number; y: number }) => void;
   hidden?: boolean;
 }) {
   const dock = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
