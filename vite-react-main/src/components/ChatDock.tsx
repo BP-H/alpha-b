@@ -1,3 +1,4 @@
+// src/components/ChatDock.tsx
 import { useEffect, useRef, useState } from "react";
 import bus from "../lib/bus";
 
@@ -9,14 +10,16 @@ export default function ChatDock() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const off = bus.on("chat:add", (m: Msg) => {
+    const off = bus.on?.("chat:add", (m: Msg) => {
       setMsgs((prev) => [...prev.slice(-9), m]); // keep last 10
       queueMicrotask(() => {
         const el = wrapRef.current;
         if (el) el.scrollTop = el.scrollHeight;
       });
     });
-    return off;
+    return () => {
+      try { off?.(); } catch {}
+    };
   }, []);
 
   if (!open) {
