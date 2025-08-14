@@ -15,10 +15,10 @@ const SEED = [
 ];
 
 export default function Shell({
-  onPortal,
+  onPortal = () => {},     // <-- safe default
   hideOrb = false,
 }: {
-  onPortal: (post: Post, at: { x: number; y: number }) => void;
+  onPortal?: (post: Post, at: { x: number; y: number }) => void;  // <-- now optional
   hideOrb?: boolean;
 }) {
   const avatar = (i: number) => `https://i.pravatar.cc/100?img=${(i % 70) + 1}`;
@@ -37,26 +37,27 @@ export default function Shell({
     []
   );
 
-  // Publish posts for the virtualized Feed
+  // publish to virtualized feed
   const setPosts = useFeedStore((s) => s.setPosts);
   useEffect(() => { setPosts(posts); }, [posts, setPosts]);
 
-  // Let the brand button open the portal from the dock position
+  // helper to open the portal from the dock location
   const enterFromFeed = (post?: Post, at?: { x: number; y: number }) => {
     const p = post ?? posts[0];
     const target = {
       x: at?.x ?? window.innerWidth - 56,
       y: at?.y ?? window.innerHeight - 56,
     };
+    // fly the orb (AssistantOrb listens for this)
     bus.emit("orb:portal", { post: p, x: target.x, y: target.y });
   };
 
   return (
     <>
-      {/* Top-left brand */}
+      {/* brand (top-left) */}
       <BrandBadge onEnterUniverse={() => enterFromFeed()} />
 
-      {/* Feed */}
+      {/* feed */}
       <main className="content-viewport feed-wrap">
         <Feed
           me={me}
@@ -65,7 +66,7 @@ export default function Shell({
         />
       </main>
 
-      {/* Voice/portal orb (MUST pass onPortal) */}
+      {/* orb — MUST receive onPortal (safe default above prevents crashes) */}
       <AssistantOrb onPortal={onPortal} hidden={hideOrb} />
     </>
   );
