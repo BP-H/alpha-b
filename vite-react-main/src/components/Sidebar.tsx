@@ -58,6 +58,10 @@ export default function Sidebar() {
             <img
               src="/avatar.jpg"
               alt="me"
+              width={56}
+              height={56}
+              loading="lazy"
+              decoding="async"
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderSvg; }}
             />
           </button>
@@ -78,6 +82,10 @@ export default function Sidebar() {
                 <img
                   src="/avatar.jpg"
                   alt="avatar"
+                  width={64}
+                  height={64}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderSvg; }}
                 />
               </button>

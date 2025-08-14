@@ -38,7 +38,16 @@ export default function PostCard({ post, me, onOpenProfile, onEnterWorld }: Prop
         className="post-media"
         style={{ backgroundImage: imgUrl ? `url(${imgUrl})` : undefined }}
       >
-        {imgUrl && <img src={imgUrl} alt={imgAlt} loading="lazy" decoding="async" />}
+        {imgUrl && (
+          <img
+            src={imgUrl}
+            alt={imgAlt}
+            width={800}
+            height={1000}
+            loading="lazy"
+            decoding="async"
+          />
+        )}
       </div>
 
       {/* Frost BOTTOM — 5 equal cells: avatar + 4 evenly spaced icons */}
