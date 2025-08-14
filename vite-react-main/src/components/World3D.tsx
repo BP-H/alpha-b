@@ -51,7 +51,9 @@ function DemandBridge({ deps }: { deps: any[] }) {
   useEffect(() => {
     const off = bus.on?.("world:update", () => invalidate());
     return () => {
-      try { off?.(); } catch {}
+      try {
+        off?.();
+      } catch {}
     };
   }, [invalidate]);
 
@@ -91,7 +93,9 @@ export default function World3D({
       setW((s) => clampWorld({ ...s, ...p }))
     );
     return () => {
-      try { off?.(); } catch {}
+      try {
+        off?.();
+      } catch {}
     };
   }, []);
 
@@ -160,8 +164,12 @@ export default function World3D({
 
       {/* Bottom-only glass bar */}
       <div className="world-bottombar">
-        <button className="pill" onClick={onBack}>Back to Feed</button>
-        <button className="pill" onClick={() => startSession("immersive-vr")}>Enter VR</button>
+        <button className="pill" onClick={onBack}>
+          Back to Feed
+        </button>
+        <button className="pill" onClick={() => startSession("immersive-vr")}>
+          Enter VR
+        </button>
         {selected && <span className="crumb">Portal • {selected.title}</span>}
       </div>
     </div>
