@@ -1,9 +1,10 @@
+// src/components/feed/Feed.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Post, User } from "../../types";
+import type { Post, User } from "../../types";
 import PostCard from "../PostCard";
 import { useFeedStore } from "../../lib/feedStore";
-import "../Feed.css"; // ← fixed path
+import "./Feed.css"; // ← correct path: same folder as this file
 
 type Props = {
   me: User;
@@ -17,6 +18,7 @@ const PRELOAD_THRESHOLD_PX = 800;
 export default function Feed({ me, onOpenProfile, onEnterWorld }: Props) {
   const allPosts = useFeedStore((s) => s.posts);
   const [page, setPage] = useState(0);
+
   const visiblePosts = useMemo(
     () => allPosts.slice(0, Math.min(allPosts.length, (page + 1) * PAGE_SIZE)),
     [allPosts, page]
@@ -27,9 +29,10 @@ export default function Feed({ me, onOpenProfile, onEnterWorld }: Props) {
   const rowVirtualizer = useVirtualizer({
     count: visiblePosts.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 500, // initial guess; we'll measure precisely
-    measureElement: (el) => (el as HTMLElement).getBoundingClientRect().height,
+    estimateSize: () => 500, // initial estimate; real size is measured below
     overscan: 6,
+    // (Optional) custom measurer for accuracy if posts vary a lot in height:
+    measureElement: (el) => (el as HTMLElement).getBoundingClientRect().height,
   });
 
   // Increment page when the user nears the bottom
@@ -46,7 +49,7 @@ export default function Feed({ me, onOpenProfile, onEnterWorld }: Props) {
       }
     };
 
-    // Run once in case we're already short and need more to fill viewport
+    // Prime once (in case the viewport is tall)
     onScroll();
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
@@ -64,7 +67,10 @@ export default function Feed({ me, onOpenProfile, onEnterWorld }: Props) {
             <div
               key={post.id}
               data-index={vr.index}
-              ref={rowVirtualizer.measureElement}
+              // safer ref callback than passing the method directly
+              ref={(el) => {
+                if (el) rowVirtualizer.measureElement(el);
+              }}
               style={{
                 position: "absolute",
                 top: 0,
