@@ -1,47 +1,23 @@
 // src/lib/api.ts
-export async function pingOpenAI(apiKey: string) {
-  const r = await fetch("/api/openai-ping", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey }),
-  });
-  return r.json();
-}
-
-export async function quickChat(apiKey: string) {
-  const r = await fetch("/api/openai-quick-chat", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey }),
-  });
-  return r.json();
-}
-
-export async function assistantReply(q: string, apiKey?: string) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
+export async function assistantReply(prompt: string): Promise<{ ok: boolean; text?: string; error?: string }> {
+  const apiKey = localStorage.getItem("sn2177.apiKey") || "";
   try {
     const r = await fetch("/api/assistant-reply", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apiKey ? { q, apiKey } : { q }),
-      signal: controller.signal,
+      body: JSON.stringify({ apiKey, prompt }),
     });
-    if (!r.ok) {
-      const error = await r.text();
-      return { ok: false, error };
-    }
-    const { text } = await r.json();
-    return { ok: true, text };
+    const j = await r.json().catch(() => ({}));
+    return j?.ok ? { ok: true, text: j.text || "" } : { ok: false, error: j?.error || "Failed" };
   } catch (e: any) {
-    return { ok: false, error: e?.message ?? String(e) };
-  } finally {
-    clearTimeout(timeout);
+    return { ok: false, error: e?.message || "Network error" };
   }
 }
 
-export async function fetchPlayers(): Promise<{id:string; name:string; color:string}[]> {
+export async function fetchPlayers(): Promise<{ id: string; name: string; color: string }[]> {
   try {
     const r = await fetch("/api/players");
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     return j?.ok ? (j.players || []) : [];
   } catch {
     return [];
