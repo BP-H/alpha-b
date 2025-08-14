@@ -1,33 +1,42 @@
+// src/components/Shell.tsx
 import React from "react";
 import Feed from "./feed/Feed";
-import AssistantOrb from "./AssistantOrb";
 import World3D from "./World3D";
+import AssistantOrb from "./AssistantOrb";
 import ChatDock from "./ChatDock";
-import bus from "../lib/bus";
+import Topbar from "./Topbar";
+import Sidebar from "./Sidebar";
+import PortalOverlay from "./PortalOverlay";
+import PostComposer from "./PostComposer";
 
 export default function Shell() {
-  // If you have a Portal overlay, forward the event so the rest of the app can react.
-  const onPortal = (post: any, at: { x: number; y: number }) => {
-    try { bus.emit?.("portal:open", { post, at }); } catch {}
-  };
-
   return (
     <>
-      {/* 3D background (click-through) */}
-      <div className="world-layer">
-        <World3D selected={null} onBack={() => {}} />
+      {/* 3D world behind everything */}
+      <div className="world-layer" aria-hidden>
+        <World3D />
       </div>
 
-      {/* Scrollable feed viewport */}
-      <div className="content-viewport">
-        <div className="feed-wrap">
-          <Feed />
+      <Topbar />
+      <Sidebar />
+      <PortalOverlay />
+
+      {/* IMPORTANT: use the same classes the feed CSS targets */}
+      <main
+        className="content-viewport feed-wrap"
+        // topbar pushes the scroller down (Topbar sets --topbar-h)
+        style={{ paddingTop: "var(--topbar-h, 56px)" }}
+      >
+        {/* keep the composer inside the feed grid width */}
+        <div className="feed-content" style={{ padding: "12px 0" }}>
+          <PostComposer />
         </div>
-      </div>
 
-      {/* Voice orb & chat dock (fixed) */}
-      <AssistantOrb onPortal={onPortal} />
+        <Feed />
+      </main>
+
       <ChatDock />
+      <AssistantOrb />
     </>
   );
 }
