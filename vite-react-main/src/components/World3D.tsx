@@ -10,7 +10,8 @@ import { fetchPlayers } from "../lib/api";
 
 type Player = { id: string; name: string; color: string };
 
-function ringPositions(count: number) {
+/** Exported — used elsewhere */
+export function ringPositions(count: number) {
   const arr: [number, number, number][] = [];
   const r = 7.2;
   const n = Math.max(1, count);
@@ -21,7 +22,8 @@ function ringPositions(count: number) {
   return arr;
 }
 
-function FloorGrid({ color, opacity }: { color: string; opacity: number }) {
+/** Exported — used elsewhere */
+export function FloorGrid({ color, opacity }: { color: string; opacity: number }) {
   const geo = useMemo(() => new THREE.PlaneGeometry(240, 240, 120, 120), []);
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.4, -8]} geometry={geo}>
@@ -30,13 +32,7 @@ function FloorGrid({ color, opacity }: { color: string; opacity: number }) {
   );
 }
 
-export default function World3D({
-  selected,
-  onBack,
-}: {
-  selected: Post | null;
-  onBack: () => void;
-}) {
+export default function World3D({ selected, onBack }: { selected: Post | null; onBack: () => void }) {
   const [w, setW] = useState<WorldState>(defaultWorld);
   const [players, setPlayers] = useState<Player[]>([]);
 
@@ -44,10 +40,7 @@ export default function World3D({
     () => bus.on("world:update", (p: Partial<WorldState>) => setW((s) => clampWorld({ ...s, ...p }))),
     []
   );
-  useEffect(() => {
-    // Replace with your real backend later; this is the stub.
-    fetchPlayers().then(setPlayers).catch(() => setPlayers([]));
-  }, []);
+  useEffect(() => { fetchPlayers().then(setPlayers).catch(() => setPlayers([])); }, []);
 
   const bg = w.theme === "dark" ? "#0b0d12" : "#f6f8fb";
   const fogC = w.theme === "dark" ? "#0b0d12" : "#f1f4fa";
@@ -60,25 +53,16 @@ export default function World3D({
 
   return (
     <div className="world-wrap" style={{ position: "relative" }}>
-      <Canvas
-        dpr={[1, 2]}
-        camera={{ position: [0, 0.2, 7], fov: 50 }}
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-        style={{ height: "100vh" }}
-        frameloop="demand"
-      >
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 0.2, 7], fov: 50 }} style={{ height: "100vh" }}>
         <color attach="background" args={[bg]} />
         <fog attach="fog" args={[fogC, fogNear, fogFar]} />
-
         <ambientLight intensity={1.0} />
         <directionalLight position={[5, 8, 3]} intensity={0.65} />
-
         <FloorGrid color={gridC} opacity={w.gridOpacity} />
-
         <Instances limit={128}>
           <sphereGeometry args={[0.26, 32, 32]} />
           <meshStandardMaterial
-            color={"#d1d5db"} // neutral steel
+            color={"#d1d5db"}               // neutral steel
             emissive={w.theme === "dark" ? "#22d3ee" : "#67e8f9"}
             emissiveIntensity={0.12}
             roughness={0.25}
@@ -87,22 +71,16 @@ export default function World3D({
           {positions.map((p, i) => {
             const c = players[i]?.color || w.orbColor || "#7dd3fc";
             return (
-              <Float
-                key={i}
-                floatIntensity={0.6}
-                rotationIntensity={0.25}
-                speed={0.9 + (i % 4) * 0.15}
-              >
+              <Float key={i} floatIntensity={0.6} rotationIntensity={0.25} speed={0.9 + (i % 4) * 0.15}>
                 <Instance position={p} color={c} />
               </Float>
             );
           })}
         </Instances>
-
         <OrbitControls enablePan={false} />
       </Canvas>
 
-      {/* Bottom-only glass bar */}
+      {/* Bottom glass bar */}
       <div className="world-bottombar">
         <button className="pill" onClick={onBack}>Back to Feed</button>
         {selected && <span className="crumb">Portal • {selected.title}</span>}
