@@ -3,6 +3,7 @@ import "./Shell.css";
 import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
 import AssistantOrb from "./AssistantOrb";
+import ChatDock from "./ChatDock";
 import World3D from "./World3D";
 import Feed from "./Feed";
 import { useFeedStore } from "../lib/feedStore";
@@ -59,6 +60,7 @@ export default function Shell() {
 
       {/* Floating orb (bottom-right) */}
       <AssistantOrb />
+      <ChatDock />
     </>
   );
 }
