@@ -2,7 +2,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Float, Instances, Instance, OrbitControls } from "@react-three/drei";
-import { XR, createXRStore, useXRStore, useXRControllerLocomotion } from "@react-three/xr";
+import {
+  XR,
+  createXRStore,
+  useXR, // ← use this to read session state
+  useXRStore,
+  useXRControllerLocomotion,
+} from "@react-three/xr";
 import * as THREE from "three";
 import type { Post } from "../types";
 import bus from "../lib/bus";
@@ -62,7 +68,7 @@ function DemandBridge({ deps }: { deps: any[] }) {
 
 /** Simple continuous locomotion when in XR (stick/motion controller) */
 function VRLocomotion() {
-  const store = useXRStore();
+  const store = useXRStore(); // ← no selector args; this returns the store
   useXRControllerLocomotion((velocity, rotationVelocityY, delta) => {
     const origin = store.getState().origin;
     if (!origin) return;
@@ -74,7 +80,7 @@ function VRLocomotion() {
 
 /** Hide OrbitControls while XR session is active */
 function OrbitWhenNotXR() {
-  const session = useXRStore((s) => s.session);
+  const { session } = useXR(); // ← read session from XR state
   return session ? null : <OrbitControls enablePan={false} />;
 }
 
@@ -126,9 +132,12 @@ export default function World3D({
       >
         <XR store={xrStore}>
           {/* Trigger a single frame whenever these change */}
-          <DemandBridge deps={[w.theme, w.fogLevel, w.gridOpacity, w.orbColor, positions.length]} />
+          <DemandBridge
+            deps={[w.theme, w.fogLevel, w.gridOpacity, w.orbColor, positions.length]}
+          />
 
           <VRLocomotion />
+
           <color attach="background" args={[bg]} />
           <fog attach="fog" args={[fogC, fogNear, fogFar]} />
 
