@@ -1,18 +1,13 @@
 // /api/assistant-reply.ts
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
   const body = (req.body ?? {}) as any;
-
-  // Prefer server env in prod; fall back to client-supplied key for dev.
   const apiKey = process.env.OPENAI_API_KEY || body.apiKey || "";
   if (!apiKey) return res.status(500).json({ ok: false, error: "Missing OPENAI_API_KEY" });
 
-  // Support both shapes while you transition
   const raw = typeof body.prompt === "string" ? body.prompt : (typeof body.q === "string" ? body.q : "");
   const prompt = (raw || "").trim();
   if (!prompt) return res.status(400).json({ ok: false, error: "Missing prompt" });
@@ -26,16 +21,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         temperature: 0.3,
         messages: [
           { role: "system", content: "You are the SuperNOVA assistant orb. Reply in one or two concise sentences. No markdown." },
-          { role: "user", content: String(prompt).slice(0, 2000) },
+          { role: "user", content: prompt.slice(0, 2000) },
         ],
       }),
     });
-
-    const data = await r.json();
-    if (!r.ok) {
-      return res.status(r.status).json({ ok: false, error: data?.error?.message || "Failed" });
-    }
-    const text = (data?.choices?.[0]?.message?.content || "").trim();
+    const j = await r.json();
+    if (!r.ok) return res.status(r.status).json({ ok: false, error: j?.error?.message || "Failed" });
+    const text = (j?.choices?.[0]?.message?.content || "").trim();
     return res.status(200).json({ ok: true, text });
   } catch (e: any) {
     return res.status(500).json({ ok: false, error: e?.message || "Network error" });
