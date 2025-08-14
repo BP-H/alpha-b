@@ -45,6 +45,7 @@ export default function World3D({
     []
   );
   useEffect(() => {
+    // Replace with your real backend later; this is the stub.
     fetchPlayers().then(setPlayers).catch(() => setPlayers([]));
   }, []);
 
@@ -59,9 +60,16 @@ export default function World3D({
 
   return (
     <div className="world-wrap" style={{ position: "relative" }}>
-      <Canvas dpr={[1, 2]} camera={{ position: [0, 0.2, 7], fov: 50 }} style={{ height: "100vh" }}>
+      <Canvas
+        dpr={[1, 2]}
+        camera={{ position: [0, 0.2, 7], fov: 50 }}
+        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+        style={{ height: "100vh" }}
+        frameloop="demand"
+      >
         <color attach="background" args={[bg]} />
         <fog attach="fog" args={[fogC, fogNear, fogFar]} />
+
         <ambientLight intensity={1.0} />
         <directionalLight position={[5, 8, 3]} intensity={0.65} />
 
@@ -70,7 +78,7 @@ export default function World3D({
         <Instances limit={128}>
           <sphereGeometry args={[0.26, 32, 32]} />
           <meshStandardMaterial
-            color={"#d1d5db"}                 /* neutral steel */
+            color={"#d1d5db"} // neutral steel
             emissive={w.theme === "dark" ? "#22d3ee" : "#67e8f9"}
             emissiveIntensity={0.12}
             roughness={0.25}
@@ -79,7 +87,12 @@ export default function World3D({
           {positions.map((p, i) => {
             const c = players[i]?.color || w.orbColor || "#7dd3fc";
             return (
-              <Float key={i} floatIntensity={0.6} rotationIntensity={0.25} speed={0.9 + (i % 4) * 0.15}>
+              <Float
+                key={i}
+                floatIntensity={0.6}
+                rotationIntensity={0.25}
+                speed={0.9 + (i % 4) * 0.15}
+              >
                 <Instance position={p} color={c} />
               </Float>
             );
