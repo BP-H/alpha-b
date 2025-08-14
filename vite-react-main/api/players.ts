@@ -1,5 +1,6 @@
+// /api/players.ts
 export default function handler(_req: any, res: any) {
-  // Replace with your real player list later (id/name/color).
+  // Cool neutrals (no purple/pink)
   const players = [
     { id: "alice",  name: "Alice",  color: "#7dd3fc" }, // sky-300
     { id: "bob",    name: "Bob",    color: "#5eead4" }, // teal-300
