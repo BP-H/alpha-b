@@ -17,7 +17,7 @@ export default function App() {
     y: 0,
   });
 
-  // Called by the orb via Shell → AssistantOrb → onPortal(post, at)
+  // Called when the orb portals
   const enterWorld = useCallback((p: Post, at?: { x: number; y: number }) => {
     setSelected(p);
     setBurst({
@@ -33,7 +33,7 @@ export default function App() {
 
   const leaveWorld = useCallback(() => setMode("feed"), []);
 
-  // Voice command “back/exit” support
+  // Voice “back/exit”
   useEffect(() => bus.on("ui:leave", () => setMode("feed")), []);
 
   const overlayStyle = useMemo(
@@ -47,10 +47,10 @@ export default function App() {
 
   return (
     <div style={{ position: "relative" }}>
-      {/* non‑interactive 3D background */}
+      {/* always-on background */}
       <BackgroundVoid />
 
-      {/* Foreground UI */}
+      {/* foreground */}
       <div className="apple-white-bg" style={{ position: "relative", zIndex: 1 }}>
         {mode === "feed" ? (
           <Shell onPortal={enterWorld} hideOrb={false} />
@@ -61,10 +61,10 @@ export default function App() {
         )}
       </div>
 
-      {/* Chat transcript dock */}
+      {/* chat transcript */}
       <ChatDock />
 
-      {/* Expanding white “portal” mask */}
+      {/* expanding portal mask */}
       <div className={`portal-overlay ${burst.on ? "on" : ""}`} style={overlayStyle} aria-hidden />
     </div>
   );
