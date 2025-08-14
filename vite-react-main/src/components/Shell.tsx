@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import "./Shell.css";
 import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
-import PostCard from "./PostCard";
 import AssistantOrb from "./AssistantOrb";
 import World3D from "./World3D";
+import Feed from "./Feed";
+import { useFeedStore } from "../lib/feedStore";
 
 const IMG = (id: number) => `https://picsum.photos/id/${id}/1080/1350`;
 const SEED = [
@@ -30,6 +31,11 @@ export default function Shell() {
     []
   );
 
+  const setPosts = useFeedStore((s) => s.setPosts);
+  useEffect(() => {
+    setPosts(posts);
+  }, [posts, setPosts]);
+
   const onEnterWorld = () => {
     console.log("Enter Universe");
   };
@@ -45,19 +51,11 @@ export default function Shell() {
       <BrandBadge onEnterUniverse={onEnterWorld} />
 
       {/* Feed */}
-      <main className="content-viewport feed-wrap">
-        <div className="feed-content">
-          {posts.map((p: Post) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              me={me}
-              onOpenProfile={(id) => console.log("profile:", id)}
-              onEnterWorld={onEnterWorld}
-            />
-          ))}
-        </div>
-      </main>
+      <Feed
+        me={me}
+        onOpenProfile={(id) => console.log("profile:", id)}
+        onEnterWorld={onEnterWorld}
+      />
 
       {/* Floating orb (bottom-right) */}
       <AssistantOrb />
