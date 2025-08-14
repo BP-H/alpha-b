@@ -4,7 +4,7 @@ import type { Post, User } from "../types";
 import BrandBadge from "./BrandBadge";
 import AssistantOrb from "./AssistantOrb";
 import World3D from "./World3D";
-import Feed from "./Feed";
+import Feed from "./feed/Feed"; // ← correct path
 import { useFeedStore } from "../lib/feedStore";
 
 const IMG = (id: number) => `https://picsum.photos/id/${id}/1080/1350`;
@@ -50,7 +50,7 @@ export default function Shell() {
       {/* Top-left brand */}
       <BrandBadge onEnterUniverse={onEnterWorld} />
 
-      {/* Feed */}
+      {/* Virtualized feed */}
       <Feed
         me={me}
         onOpenProfile={(id) => console.log("profile:", id)}
