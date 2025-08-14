@@ -33,6 +33,11 @@ export default function Sidebar() {
   useEffect(() => { bus.emit("search:update", { query }); }, [query]);
   useEffect(() => { bus.emit("backend:update", { useReal, backendUrl }); }, [useReal, backendUrl]);
 
+  useEffect(() => {
+    const unsub = bus.on("sidebar:toggle", () => setOpen(o => !o));
+    return () => unsub();
+  }, [setOpen]);
+
   const goto = (label: string) => bus.emit("nav:goto", { label });
 
   const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
