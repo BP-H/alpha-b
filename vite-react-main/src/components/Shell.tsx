@@ -37,11 +37,11 @@ export default function Shell({
     []
   );
 
-  // publish posts to the virtualized feed store
+  // Publish posts for the virtualized Feed
   const setPosts = useFeedStore((s) => s.setPosts);
   useEffect(() => { setPosts(posts); }, [posts, setPosts]);
 
-  // If a card calls "enter world" without explicit coords, fly from dock
+  // Let the brand button open the portal from the dock position
   const enterFromFeed = (post?: Post, at?: { x: number; y: number }) => {
     const p = post ?? posts[0];
     const target = {
@@ -65,7 +65,7 @@ export default function Shell({
         />
       </main>
 
-      {/* Voice + portal orb — NOTE the onPortal prop */}
+      {/* Voice/portal orb (MUST pass onPortal) */}
       <AssistantOrb onPortal={onPortal} hidden={hideOrb} />
     </>
   );
